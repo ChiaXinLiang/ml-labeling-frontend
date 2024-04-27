@@ -8,7 +8,7 @@ function App() {
   const [ProjectData, setProjectData] = React.useState("");
 
   React.useEffect(() => {
-    fetch("http://140.127.196.78:8081/projects")
+    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`)
       .then((res) => res.json())
       .then((data) => {
         //console.log(data);

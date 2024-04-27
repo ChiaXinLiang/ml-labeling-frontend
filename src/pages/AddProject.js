@@ -382,7 +382,7 @@ function Modal({ openModal, closeModal }) {
   const [Description, setDescription] = React.useState("");
 
   async function handleSubmit(e) {
-    fetch("http://140.127.196.78:8081/projects", {
+    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
