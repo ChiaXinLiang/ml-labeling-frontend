@@ -1,0 +1,108 @@
+.tabs {
+	height: 36px;
+	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+	box-shadow: 0 -1px 0 #d9d9d9 inset;
+}
+
+.tabs__list {
+	display: flex;
+	min-width: 0;
+}
+
+.tabs__item {
+	color: rgba(0,0,0,0.5);
+	width: 150px;
+	overflow: hidden;
+	cursor: pointer;
+	position: relative;
+	box-shadow: -0.5px 0 0 #d9d9d9 inset, 0.5px 0 0 #d9d9d9 inset;
+}
+
+.tabs__item_active {
+	color: #000;
+	cursor: default;
+	background-color: #fff;
+	box-shadow: -0.5px 0 0 #d9d9d9 inset, 0.5px 0 0 #d9d9d9 inset;
+}
+
+.tabs__item_active .tabs__item-right-button {
+	display: flex;
+}
+
+.tabs__item_virtual {
+	background: linear-gradient(180deg, rgba(243,243,243,0) 0%, #f3f3f3 63.89%), repeating-linear-gradient(-45deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 6px, transparent 6px, transparent 12px), #f3f3f3;
+}
+
+.tabs__item_virtual.tabs__item_active {
+	background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 63.89%), repeating-linear-gradient(-45deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 6px, transparent 6px, transparent 12px), #fff;
+}
+
+.tabs__item_hover .tabs__item-right-button {
+	display: flex;
+}
+
+.tabs__item-left {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 36px;
+	padding-left: 16px;
+	padding-right: 4px;
+	display: flex;
+	align-items: center;
+}
+
+.tabs__item-left_edit {
+	padding-left: 6px;
+}
+
+.tabs__item-right {
+	position: absolute;
+	right: 0;
+	top: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 36px;
+	width: 36px;
+	max-width: 60%;
+}
+
+.tabs__item-right-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	display: none;
+	height: 36px;
+	width: 36px;
+	margin: none;
+	padding: none;
+}
+
+.tabs__add {
+	padding: 0;
+	border: none;
+	outline: none;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: rgba(0,0,0,0.15) !important;
+	background: none;
+}
+
+.tabs__add:focus {
+	box-shadow: none;
+}
+
+.tabs__add:hover {
+	color: rgba(0,0,0,0.35) !important;
+}
+
+.tabs__extra {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
