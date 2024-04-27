@@ -597,6 +597,8 @@ export default function AddProject({ ProjectData }) {
             backgroundColor: "rgba(245, 245, 245, 1)",
             width: "70%",
             height: "400px",
+            overflowY: "scroll",
+            overflowX: "hidden",
           }}
         >
           <div style={{ display: "flex" }}>

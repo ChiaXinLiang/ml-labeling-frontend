@@ -1,6 +1,5 @@
 import React from "react";
 import Nav from "./Nav";
-//import Tab from "../pages/Tabs/Tab";
 
 function ButtonGroup() {
   const [selectedValue, setSelectedValue] = React.useState("Grid");
