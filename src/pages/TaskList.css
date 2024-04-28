@@ -1,0 +1,25 @@
+.table{
+    width: 100%;
+    border-collapse: separate;
+    margin-top: 20px;
+}
+
+.table thead th{
+    border-Right: 1px solid #d8d5dd;
+    border-bottom: 2px solid #d8d5dd;
+    text-align: start;
+    padding: 10px;
+    overflow: visible;
+    font-size: 14px;
+}
+
+.button{
+    width: 90px;
+    height: 30px;
+    background-color: white;
+    border: 1px solid rgba(213, 213, 210, 0.8);
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }

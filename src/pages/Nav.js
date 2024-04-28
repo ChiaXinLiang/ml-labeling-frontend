@@ -1,5 +1,6 @@
 import { IconButton, Avatar, Menu, MenuItem, Divider } from "@mui/material";
 import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 function UserMenu() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -78,7 +79,10 @@ function UserMenu() {
   );
 }
 
-export default function Nav() {
+export default function Nav({ projectDataById }) {
+  const [isRoot, setIsRoot] = useState(false);
+  const location = useLocation();
+  const isProjectPage = location.pathname.startsWith("/project/");
   return (
     <div
       style={{
@@ -92,7 +96,27 @@ export default function Nav() {
         <img src="/menu.png" alt="menu" width="30" />
       </IconButton>
       <div className="vl"></div>
-      <span style={{ marginLeft: "60px", flex: "4" }}>專案</span>
+      <span style={{ display: "flex", marginLeft: "60px", flex: "4" }}>
+        {isProjectPage ? (
+          <>
+            <div
+              style={{ color: isRoot ? "#1890ff" : "inherit", opacity: 0.5 }}
+              onMouseEnter={() => setIsRoot(true)}
+              onMouseLeave={() => setIsRoot(false)}
+            >
+              <Link
+                to={"/"}
+                style={{ color: "inherit", textDecoration: "none" }}
+              >
+                專案
+              </Link>
+            </div>
+            <span>／{projectDataById ? projectDataById.title : ""}</span>
+          </>
+        ) : (
+          <span>專案</span>
+        )}
+      </span>
       <div style={{ flex: "1" }}>
         <button className="button">設定</button>
         <UserMenu />

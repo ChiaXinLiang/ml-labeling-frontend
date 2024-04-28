@@ -23,7 +23,11 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<AddProject ProjectData={ProjectData} />} />
-          <Route path="/TaskList" element={<TaskList />} />
+          <Route path="/project" element={<TaskList />} />
+          <Route
+            path="/project/:id"
+            element={<TaskList ProjectData={ProjectData} />}
+          />
         </Routes>
       </div>
     </BrowserRouter>
