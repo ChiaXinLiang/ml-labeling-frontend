@@ -26,15 +26,7 @@ code {
   top: 55px;
 }
 
-.button{
-  width: 90px;
-  height: 30px;
-  background-color: white;
-  border: 1px solid rgba(213, 213, 210, 0.8);
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: bold;
-}
+
 
 
 .dm-radio-group__buttons{
