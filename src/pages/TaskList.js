@@ -8,12 +8,13 @@ import { useDropzone } from "react-dropzone";
 
 function ButtonGroup({ id }) {
   const [fileUrl, setFileUrl] = React.useState([]);
-  const [inputUrl, setInputUrl] = React.useState("");
   const [showPhoto, setShowPhoto] = React.useState(false); // New state for controlling the visibility of the Photo component
   const [file, setFile] = React.useState([]);
-  console.log(file);
+  //console.log(file);
 
   function UploadImg() {
+    const [inputUrl, setInputUrl] = React.useState("");
+
     const onDrop = React.useCallback((acceptedFiles) => {
       if (acceptedFiles?.length) {
         const file = acceptedFiles[0];
@@ -111,14 +112,12 @@ function ButtonGroup({ id }) {
   }
 
   async function Import() {
+    const formData = new FormData();
+    formData.append("files", file);
+
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        file: file,
-      }),
+      body: formData,
     })
       .then((res) => res.json())
       .then((data) => {
@@ -127,7 +126,7 @@ function ButtonGroup({ id }) {
         setOpen(false);
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error("Error:", error);
       });
   }
   const [open, setOpen] = React.useState(false);
@@ -216,6 +215,26 @@ function ButtonGroup({ id }) {
     );
   }
 
+  function handleExport() {
+    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${id}`, {
+      method: "GET",
+    })
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `yolo_export_${id}.zip`;
+        document.body.appendChild(a); // Append the anchor element to the DOM
+        a.click(); // Programmatically click the anchor element to start the download
+        a.remove();
+        //alert("Data exported successfully");
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }
+
   return (
     <div
       style={{
@@ -276,7 +295,9 @@ function ButtonGroup({ id }) {
         <button className="button" onClick={handleOpen}>
           Import
         </button>
-        <button className="button">Export</button>
+        <button className="button" onClick={handleExport}>
+          Export
+        </button>
         {/* <div
           className="dm-radio-group dm-radio-group_size_medium"
           style={{ minWidth: "110px", justifyContent: "space-between" }}
@@ -525,8 +546,8 @@ const columns = [
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            maxHeight: "90%",
-            maxWidth: "80%",
+            maxHeight: "100%",
+            maxWidth: "100%",
             objectFit: "contain",
             borderRadius: "3px",
           }}
@@ -546,7 +567,7 @@ const rows = [
     "Total Predictions": 0,
     "Annotated By": "Jon",
     Image: {
-      src: "/Logo.png",
+      src: "/1001729.jpg",
       alt: "Data",
     },
   },
@@ -573,10 +594,11 @@ const rows = [
 
 function TaskTable() {
   return (
-    <div style={{ height: 500, width: "100%", marginTop: "30px" }}>
+    <div style={{ height: 500, width: "100%", marginTop: "20px" }}>
       <DataGrid
         rows={rows}
         columns={columns}
+        rowHeight={80}
         disableColumnMenu
         disableColumnSelector
         initialState={{
@@ -595,56 +617,11 @@ function TaskTable() {
             textAlign: "center",
           },
         }}
-        // pageSizeOptions={[5, 10]}
         checkboxSelection
-        //hideFooter
-        //hideFooterPagination
       />
     </div>
   );
 }
-// function Task() {
-//   return (
-//     <>
-//       <table className="table">
-//         <thead>
-//           <tr>
-//             <th>ID</th>
-//             <th>Complete</th>
-//             <th>Total annotations</th>
-//             <th>Canceled annotations</th>
-//             <th>Total Predictions</th>
-//             <th>Annotated By</th>
-//             <th>Image</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           <tr>
-//             <td>Task 1</td>
-//             <td>John Doe</td>
-//             <td>12/12/2021</td>
-//             <td>High</td>
-//             <td>Open</td>
-//           </tr>
-//           <tr>
-//             <td>Task 2</td>
-//             <td>Jane Doe</td>
-//             <td>12/12/2021</td>
-//             <td>Low</td>
-//             <td>Open</td>
-//           </tr>
-//           <tr>
-//             <td>Task 3</td>
-//             <td>John Doe</td>
-//             <td>12/12/2021</td>
-//             <td>Medium</td>
-//             <td>Open</td>
-//           </tr>
-//         </tbody>
-//       </table>
-//     </>
-//   );
-// }
 
 export default function TaskList({ ProjectData }) {
   const [datas, setData] = React.useState([]);
@@ -662,7 +639,6 @@ export default function TaskList({ ProjectData }) {
   return (
     <div>
       <Nav projectDataById={projectDataById} />
-      {/* <h1>{id}</h1> */}
       <ButtonGroup id={id} />
       <TaskTable />
     </div>
