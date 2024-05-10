@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Nav from "./Nav";
 import Step1 from "./Step1";
+import Step2 from "./Step2";
 import "./AddProject.css";
 
 function Step0({ onUpdateTitle, onUpdateDescription }) {
@@ -78,132 +79,6 @@ function Step0({ onUpdateTitle, onUpdateDescription }) {
             border: "black solid 1px",
           }}
         />
-      </div>
-    </div>
-  );
-}
-
-function Step2() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "30px",
-          marginLeft: "2%",
-          marginRight: "2%",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            width: "115px",
-            height: "34px",
-            fontSize: "14px",
-            backgroundColor: "rgba(217, 217, 217, 0.5)",
-            borderRadius: "5px",
-            color: "rgba(0, 0, 0, 1)",
-          }}
-        >
-          <span>電腦視覺</span>
-          <span>{">"}</span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "25%",
-          }}
-        >
-          <label style={{ marginRight: "60%", fontSize: "14px" }}>
-            知識本體名稱
-          </label>
-          <input
-            type="text"
-            style={{
-              height: "26px",
-              borderRadius: "5px",
-              border: "1px solid black",
-            }}
-          />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "45%" }}>
-          <label style={{ marginRight: "90%", fontSize: "14px" }}>說明</label>
-          <input
-            type="text"
-            style={{
-              height: "26px",
-              borderRadius: "5px",
-              border: "1px solid black",
-            }}
-          />
-        </div>
-      </div>
-      <div className="set-container">
-        <div className="set-container-border">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginRight: "10%",
-              marginTop: "5px",
-              flex: "5",
-              gap: "10px",
-            }}
-          >
-            <span style={{ marginRight: "70%" }}>加入物件</span>
-            <div
-              style={{
-                display: "flex",
-                height: "30px",
-                gap: "20px",
-                marginLeft: "15px",
-              }}
-            >
-              <input type="text" />
-              <input type="text" />
-            </div>
-          </div>
-          <div
-            style={{
-              flex: "1",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: "10px",
-              marginRight: "10px",
-            }}
-          >
-            <button
-              style={{
-                width: "80px",
-                height: "30px",
-                borderRadius: "10px",
-                border: "none",
-                color: "rgba(23, 115, 185, 1)",
-              }}
-            >
-              刪除
-            </button>
-          </div>
-        </div>
-        <div>
-          <button
-            style={{
-              width: "80px",
-              height: "30px",
-              borderRadius: "10px",
-              border: "none",
-              backgroundColor: "rgba(23, 115, 185, 1)",
-              color: "white",
-            }}
-          >
-            新增
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -407,10 +282,11 @@ export default function AddProject({ ProjectData }) {
         <div
           style={{
             display: "flex",
-            gap: "300px",
+            gap: "20px",
           }}
         >
-          <h3>標註專案列表</h3>
+          <h3 style={{ marginRight: "500px" }}>標註專案列表</h3>
+          {/* <div style={{ display: "flex", mar }}> */}
           <button
             style={{
               height: "30px",
@@ -426,6 +302,21 @@ export default function AddProject({ ProjectData }) {
           >
             新增專案
           </button>
+          <button
+            style={{
+              height: "30px",
+              marginTop: "20px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(23, 115, 185, 1)",
+              color: "white",
+              border: "none",
+              width: "100px",
+              cursor: "pointer",
+            }}
+          >
+            刪除專案
+          </button>
+          {/* </div> */}
           <Modal openModal={open} closeModal={handleClose} />
         </div>
         <div
