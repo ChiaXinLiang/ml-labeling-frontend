@@ -534,7 +534,7 @@ const columns = [
     width: 200,
   },
   {
-    field: "Image",
+    field: "file",
     headerName: "照片",
     sortable: false,
     renderCell: (params) =>
@@ -567,7 +567,7 @@ const rows = [
     "Total Predictions": 0,
     "Annotated By": "Jon",
     Image: {
-      src: "/1001729.jpg",
+      src: "upload/87/afe3d189-sample_640.png",
       alt: "Data",
     },
   },
@@ -592,11 +592,11 @@ const rows = [
   { id: 11, lastName: "Roxie", firstName: "Harvey", age: 65 },
 ];
 
-function TaskTable() {
+function TaskTable({ datas }) {
   return (
     <div style={{ height: 500, width: "100%", marginTop: "20px" }}>
       <DataGrid
-        rows={rows}
+        rows={datas}
         columns={columns}
         rowHeight={80}
         disableColumnMenu
@@ -624,23 +624,48 @@ function TaskTable() {
 }
 
 export default function TaskList({ ProjectData }) {
-  const [datas, setData] = React.useState([]);
+  const [projectDatas, setProjectData] = React.useState([]);
+  const [datas, setDatas] = React.useState([]);
+  console.log(datas);
   const { id } = useParams();
 
   React.useEffect(() => {
-    setData(ProjectData.results);
+    setProjectData(ProjectData.results);
   }, [ProjectData]);
 
+  React.useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/file-uploads?all=true`
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        const dataWithSrc = data.map((item) => ({
+          ...item,
+          src: `upload/${item.id}/${item.imageName}`, // Replace 'imageName' with the actual property name
+        }));
+        setDatas(dataWithSrc);
+        console.log(dataWithSrc);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, [id]);
+
   let projectDataById;
-  if (Array.isArray(datas)) {
-    projectDataById = datas.find((project) => project.id === Number(id));
+  if (Array.isArray(projectDatas)) {
+    projectDataById = projectDatas.find((project) => project.id === Number(id));
   }
 
   return (
     <div>
       <Nav projectDataById={projectDataById} />
       <ButtonGroup id={id} />
-      <TaskTable />
+      <TaskTable datas={datas} />
     </div>
   );
 }
