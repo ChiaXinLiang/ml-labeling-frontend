@@ -10,6 +10,14 @@
     width: 80%;
 }
 
+.deleteModal {
+    border: none;
+    background: white;
+    min-height: 20%;
+    width: 25%;
+    height: 30%;
+}
+
 .step1-button{
     background-color: white;
     border: 1px solid black;

@@ -251,14 +251,110 @@ function Modal({ openModal, closeModal }) {
   );
 }
 
+function DeleteModal({ openModal, closeModal }) {
+  const ref = React.useRef();
+
+  React.useEffect(() => {
+    if (openModal) {
+      ref.current?.showModal();
+    } else {
+      ref.current?.close();
+    }
+  }, [openModal]);
+
+  return (
+    <React.Fragment>
+      <dialog ref={ref} onCancel={closeModal} className="deleteModal">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "20px",
+          }}
+        >
+          <p
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <img src="warn.png" alt="warn" width={30}></img>
+            確定刪除所選之專案嗎?
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flex: "1",
+              gap: "10px",
+              marginTop: "20px",
+            }}
+          >
+            <button
+              onClick={closeModal}
+              style={{
+                height: "30px",
+                borderRadius: "10px",
+                backgroundColor: "rgba(213, 213, 210, 0.8)",
+                color: "black",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+                border: "none",
+                width: "80px",
+                cursor: "pointer",
+              }}
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              //onClick={handleSubmit}
+              style={{
+                height: "30px",
+                borderRadius: "10px",
+                backgroundColor: "rgba(23, 115, 185, 1)",
+                color: "white",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+                border: "none",
+                width: "80px",
+                cursor: "pointer",
+              }}
+            >
+              儲存
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </React.Fragment>
+  );
+}
+
 export default function AddProject({ ProjectData }) {
   const [open, setOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [datas, setData] = React.useState([]);
   const [selectedId, setSelectedId] = React.useState(null);
+  const [selectedIds, setSelectedIds] = React.useState([]);
 
   React.useEffect(() => {
     setData(ProjectData.results);
   }, [ProjectData]);
+
+  const handleCheckboxChange = (id) => {
+    setSelectedIds((prevSelectedIds) =>
+      prevSelectedIds.includes(id)
+        ? prevSelectedIds.filter((selectedId) => selectedId !== id)
+        : [...prevSelectedIds, id]
+    );
+  };
+
+  const handleClickDeleteOpen = () => {
+    setDeleteOpen(true);
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -276,7 +372,7 @@ export default function AddProject({ ProjectData }) {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          marginTop: "5%",
+          marginTop: "2%",
         }}
       >
         <div
@@ -286,7 +382,6 @@ export default function AddProject({ ProjectData }) {
           }}
         >
           <h3 style={{ marginRight: "500px" }}>標註專案列表</h3>
-          {/* <div style={{ display: "flex", mar }}> */}
           <button
             style={{
               height: "30px",
@@ -302,6 +397,7 @@ export default function AddProject({ ProjectData }) {
           >
             新增專案
           </button>
+          <Modal openModal={open} closeModal={handleClose} />
           <button
             style={{
               height: "30px",
@@ -313,22 +409,26 @@ export default function AddProject({ ProjectData }) {
               width: "100px",
               cursor: "pointer",
             }}
+            onClick={handleClickDeleteOpen}
           >
             刪除專案
           </button>
-          {/* </div> */}
-          <Modal openModal={open} closeModal={handleClose} />
+          <DeleteModal openModal={deleteOpen} closeModal={handleDeleteClose} />
         </div>
         <div
           style={{
             backgroundColor: "rgba(245, 245, 245, 1)",
-            width: "70%",
+            width: "78%",
             height: "400px",
             overflowY: "scroll",
             overflowX: "hidden",
           }}
         >
           <div style={{ display: "flex" }}>
+            <input
+              type="checkbox"
+              style={{ flex: "1", transform: "scale(0.3)" }}
+            />
             <p style={{ flex: "3" }}>專案名稱</p>
             <p style={{ flex: "1" }}>總任務數量</p>
             <p style={{ flex: "1" }}>已完成任務</p>
@@ -337,7 +437,7 @@ export default function AddProject({ ProjectData }) {
             <p style={{ flex: "1" }}>日期</p>
             <p style={{ flex: "1" }}>時間</p>
           </div>
-          <hr style={{ width: "90%" }} />
+          <hr style={{ width: "95%" }} />
           {Array.isArray(datas) &&
             datas.map((data) => (
               <div
@@ -348,45 +448,51 @@ export default function AddProject({ ProjectData }) {
                 onMouseEnter={() => setSelectedId(data.id)}
                 onMouseLeave={() => setSelectedId(null)}
               >
-                <Link
-                  to={`/project/${data.id}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  <div style={{ display: "flex" }}>
-                    <p style={{ flex: "3" }}>{data.title}</p>
-                    <p style={{ flex: "1" }}>{data.task_number}</p>
-                    <p style={{ flex: "1" }}>
-                      {data.num_tasks_with_annotations}
-                    </p>
-                    <p style={{ flex: "1" }}>{data.ground_truth_number}</p>
-                    <p style={{ flex: "1" }}>
-                      <Chip
-                        label={
-                          data.task_number > data.num_tasks_with_annotations
-                            ? "未處理"
-                            : "已處理"
-                        }
-                        sx={{
-                          backgroundColor: "rgba(255, 165, 99, 1)",
-                          color: "white",
-                          marginTop: "-5px",
-                        }}
-                      />
-                    </p>
-                    <p style={{ flex: "1" }}>
-                      {" "}
-                      {new Date(data.created_at).toLocaleDateString()}
-                    </p>
-                    <p style={{ flex: "1" }}>
-                      {new Date(data.created_at).toLocaleTimeString([], {
-                        hour12: false,
-                      })}
-                    </p>
-                  </div>
-                </Link>
+                <div style={{ display: "flex" }}>
+                  <input
+                    type="checkbox"
+                    style={{ flex: "1", transform: "scale(0.3)" }}
+                    checked={selectedIds.includes(data.id)}
+                    onChange={() => handleCheckboxChange(data.id)}
+                  />
+                  <Link
+                    to={`/project/${data.id}`}
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      flex: "3",
+                    }}
+                  >
+                    {" "}
+                    <p>{data.title}</p>
+                  </Link>
+                  <p style={{ flex: "1" }}>{data.task_number}</p>
+                  <p style={{ flex: "1" }}>{data.num_tasks_with_annotations}</p>
+                  <p style={{ flex: "1" }}>{data.ground_truth_number}</p>
+                  <p style={{ flex: "1" }}>
+                    <Chip
+                      label={
+                        data.task_number > data.num_tasks_with_annotations
+                          ? "未處理"
+                          : "已處理"
+                      }
+                      sx={{
+                        backgroundColor: "rgba(255, 165, 99, 1)",
+                        color: "white",
+                        marginTop: "-5px",
+                      }}
+                    />
+                  </p>
+                  <p style={{ flex: "1" }}>
+                    {" "}
+                    {new Date(data.created_at).toLocaleDateString()}
+                  </p>
+                  <p style={{ flex: "1" }}>
+                    {new Date(data.created_at).toLocaleTimeString([], {
+                      hour12: false,
+                    })}
+                  </p>
+                </div>
               </div>
             ))}
         </div>

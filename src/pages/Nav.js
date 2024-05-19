@@ -62,7 +62,7 @@ function SideMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={handleClose} component={Link} to="/">
           <img
             src="/map.png"
             alt="map"
@@ -70,7 +70,7 @@ function SideMenu() {
           />
           標注專案
         </MenuItem>
-        <MenuItem>
+        <MenuItem component={Link} to="/datacollect">
           {" "}
           <img
             src="/score.png"
@@ -88,7 +88,7 @@ function SideMenu() {
           />
           AI 模型
         </MenuItem>
-        <MenuItem>
+        <MenuItem component={Link} to="/forbidden">
           {" "}
           <img
             src="/prohibit.png"
@@ -184,6 +184,24 @@ export default function Nav({ projectDataById }) {
   const [isRoot, setIsRoot] = useState(false);
   const location = useLocation();
   const isProjectPage = location.pathname.startsWith("/project/");
+  let linkText;
+  switch (location.pathname) {
+    case "/":
+      linkText = "專案";
+      break;
+    case "/datacollect":
+      linkText = "資料集";
+      break;
+    case "/datacollect/add":
+      linkText = "資料集";
+      break;
+    case "/forbidden":
+      linkText = "";
+      break;
+    default:
+      linkText = "專案";
+  }
+
   return (
     <div
       style={{
@@ -197,7 +215,7 @@ export default function Nav({ projectDataById }) {
         <img src="/menu.png" alt="menu" width="30" />
       </IconButton> */}
       <SideMenu />
-      <div className="vl"></div>
+      {/* <div className="vl"></div> */}
       <span style={{ display: "flex", marginLeft: "60px", flex: "4" }}>
         {isProjectPage ? (
           <>
@@ -210,20 +228,20 @@ export default function Nav({ projectDataById }) {
                 to={"/"}
                 style={{ color: "inherit", textDecoration: "none" }}
               >
-                專案
+                {linkText}
               </Link>
             </div>
             <span>／{projectDataById ? projectDataById.title : ""}</span>
           </>
         ) : (
-          <span>專案</span>
+          <span>{linkText}</span>
         )}
       </span>
-      <div style={{ flex: "1" }}>
+      {/* <div style={{ flex: "1" }}>
         <button className="button">設定</button>
         <UserMenu />
-      </div>
-      <div className="hr"></div>
+      </div> */}
+      {/* <div className="hr"></div> */}
     </div>
   );
 }

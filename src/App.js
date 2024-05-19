@@ -2,6 +2,9 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AddProject from "./pages/AddProject";
 import TaskList from "./pages/TaskList";
+import DataCollect from "./pages/DataCollect";
+import AddData from "./pages/AddData";
+import Forbidden from "./pages/Forbidden";
 import "./App.css";
 
 function App() {
@@ -28,6 +31,11 @@ function App() {
             path="/project/:id"
             element={<TaskList ProjectData={ProjectData} />}
           />
+          <Route path="/datacollect">
+            <Route index element={<DataCollect ProjectData={ProjectData} />} />
+            <Route path="add" element={<AddData />} />
+          </Route>
+          <Route path="/forbidden" element={<Forbidden />} />
         </Routes>
       </div>
     </BrowserRouter>
