@@ -422,12 +422,13 @@ export default function AddProject({ ProjectData }) {
             height: "400px",
             overflowY: "scroll",
             overflowX: "hidden",
+            marginTop: "20px",
           }}
         >
           <div style={{ display: "flex" }}>
             <input
               type="checkbox"
-              style={{ flex: "1", transform: "scale(0.3)" }}
+              style={{ flex: "1", transform: "scale(0.4)" }}
             />
             <p style={{ flex: "3" }}>專案名稱</p>
             <p style={{ flex: "1" }}>總任務數量</p>

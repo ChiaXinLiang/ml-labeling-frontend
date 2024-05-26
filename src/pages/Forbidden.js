@@ -54,7 +54,11 @@ export default function Forbidden() {
   //console.log("items", items);
   return (
     <div
-      style={{ backgroundColor: "rgba(217, 217, 217, 0.5)", height: "100vh" }}
+      style={{
+        backgroundColor: "rgba(217, 217, 217, 0.5)",
+        height: "100vh",
+        overflow: "auto",
+      }}
     >
       <Nav />
       <div
@@ -64,6 +68,7 @@ export default function Forbidden() {
           marginTop: "2%",
           width: "80%",
           marginLeft: "10%",
+          marginBottom: "20px",
         }}
       >
         <h2 style={{ display: "flex", justifyContent: "start" }}>危險半徑</h2>

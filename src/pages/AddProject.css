@@ -1,13 +1,13 @@
-.modalClassName::backdrop {
+.modalClassName::backdrop { 
     background: rgba(0, 0, 0, 0.5);
-  }
+}
   
 .modalClassName {
     border: none;
     background: white;
     border-radius: 10px;
     min-height: 80%;
-    width: 80%;
+    width: 80% ;
 }
 
 .deleteModal {
@@ -17,6 +17,7 @@
     width: 25%;
     height: 30%;
 }
+
 
 .step1-button{
     background-color: white;
