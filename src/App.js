@@ -5,6 +5,7 @@ import TaskList from "./pages/TaskList";
 import DataCollect from "./pages/DataCollect";
 import AddData from "./pages/AddData";
 import Forbidden from "./pages/Forbidden";
+import AIModel from "./pages/AIModel";
 import "./App.css";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
             <Route path="add" element={<AddData />} />
           </Route>
           <Route path="/forbidden" element={<Forbidden />} />
+          <Route path="/ai" element={<AIModel />} />
         </Routes>
       </div>
     </BrowserRouter>

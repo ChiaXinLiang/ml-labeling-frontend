@@ -79,7 +79,7 @@ function SideMenu() {
           />
           資料集
         </MenuItem>
-        <MenuItem>
+        <MenuItem component={Link} to="/ai">
           {" "}
           <img
             src="/ai.png"
@@ -196,6 +196,9 @@ export default function Nav({ projectDataById }) {
       linkText = "資料集";
       break;
     case "/forbidden":
+      linkText = "";
+      break;
+    case "/ai":
       linkText = "";
       break;
     default:
