@@ -2,7 +2,6 @@ import * as React from "react";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import { useEffect, useRef } from "react";
-//import { useDropzone } from "react-dropzone";
 import { Link } from "react-router-dom";
 import Nav from "./Nav";
 import Step1 from "./Step1";
@@ -251,7 +250,7 @@ function Modal({ openModal, closeModal }) {
   );
 }
 
-function DeleteModal({ openModal, closeModal }) {
+function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
   const ref = React.useRef();
 
   React.useEffect(() => {
@@ -261,6 +260,30 @@ function DeleteModal({ openModal, closeModal }) {
       ref.current?.close();
     }
   }, [openModal]);
+
+  const handleDelete = () => {
+    selectedIds.forEach((id) => {
+      fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log(`Project ${id} deleted successfully:`, data);
+          onDelete(id); // 更新UI
+        })
+        .catch((error) => {
+          console.error(`Error deleting project ${id}:`, error);
+        });
+    });
+    closeModal();
+  };
 
   return (
     <React.Fragment>
@@ -280,8 +303,10 @@ function DeleteModal({ openModal, closeModal }) {
               alignItems: "center",
             }}
           >
-            <img src="warn.png" alt="warn" width={30}></img>
-            確定刪除所選之專案嗎?
+            <img src="warn.png" alt="warn" width={30} />
+            確定刪除所選之專案 (
+            {selectedIds.join(", ")}
+            ) 嗎?
           </p>
           <div
             style={{
@@ -307,8 +332,8 @@ function DeleteModal({ openModal, closeModal }) {
               取消
             </button>
             <button
-              type="submit"
-              //onClick={handleSubmit}
+              type="button"
+              onClick={handleDelete}
               style={{
                 height: "30px",
                 borderRadius: "10px",
@@ -320,7 +345,7 @@ function DeleteModal({ openModal, closeModal }) {
                 cursor: "pointer",
               }}
             >
-              儲存
+              確定
             </button>
           </div>
         </div>
@@ -363,6 +388,14 @@ export default function AddProject({ ProjectData }) {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleDeleteProject = (id) => {
+    setData((prevData) => prevData.filter((data) => data.id !== id));
+    setSelectedIds((prevSelectedIds) =>
+      prevSelectedIds.filter((selectedId) => selectedId !== id)
+    );
+  };
+
   return (
     <React.Fragment>
       <Nav />
@@ -413,7 +446,12 @@ export default function AddProject({ ProjectData }) {
           >
             刪除專案
           </button>
-          <DeleteModal openModal={deleteOpen} closeModal={handleDeleteClose} />
+          <DeleteModal
+            openModal={deleteOpen}
+            closeModal={handleDeleteClose}
+            selectedIds={selectedIds}
+            onDelete={handleDeleteProject}
+          />
         </div>
         <div
           style={{
@@ -442,6 +480,7 @@ export default function AddProject({ ProjectData }) {
           {Array.isArray(datas) &&
             datas.map((data) => (
               <div
+                key={data.id}
                 style={{
                   borderRadius: "5px",
                   backgroundColor: data.id === selectedId ? "white" : "inherit",
