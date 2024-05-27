@@ -222,7 +222,7 @@ function Modal({ openModal, closeModal }) {
                 cursor: "pointer",
               }}
             >
-              儲存
+              確定
             </button>
           </div>
         </div>
@@ -304,9 +304,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
             }}
           >
             <img src="warn.png" alt="warn" width={30} />
-            確定刪除所選之專案 (
-            {selectedIds.join(", ")}
-            ) 嗎?
+            確定刪除所選之專案嗎?
           </p>
           <div
             style={{
