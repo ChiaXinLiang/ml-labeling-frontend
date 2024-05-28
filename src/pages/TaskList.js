@@ -203,12 +203,12 @@ function ButtonGroup({ id }) {
 
   return (
     <div style={{ display: "flex", gap: "20px", alignItems: "center", marginLeft: "30px", marginTop: "20px" }}>
-      <button className="button">actions</button>
-      <button className="button">columns</button>
-      <button className="button">Filters</button>
-      <span style={{ fontSize: "14px", color: "gray" }}>Order</span>
-      <button className="button">not set</button>
-      <button className="button">Label All Tasks</button>
+      <button className="button">操作</button>
+      <button className="button">欄位</button>
+      <button className="button">篩選器</button>
+      <span style={{ fontSize: "14px", color: "gray" }}>順序</span>
+      <button className="button">未設定</button>
+      <button className="button">標註所有任務</button>
       <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: "10px" }}>
         <button
           style={{
@@ -244,10 +244,10 @@ function ButtonGroup({ id }) {
           </svg>
         </button>
         <button className="button" onClick={handleOpen}>
-          Import
+          匯入
         </button>
         <button className="button" onClick={handleExport}>
-          Export
+          匯出
         </button>
         <Modal openModal={open} closeModal={handleClose}></Modal>
       </div>
@@ -273,7 +273,7 @@ const columns = [
   },
   {
     field: "Total annotations",
-    headerName: "Total Annotations",
+    headerName: "總標註數",
     description: "Total annotations per task",
     headerAlign: "center",
     type: "number",
@@ -282,7 +282,7 @@ const columns = [
   },
   {
     field: "Canceled annotations",
-    headerName: "Canceled Annotations",
+    headerName: "取消的標註數",
     description: "Total Canceled annotations",
     headerAlign: "center",
     type: "number",
@@ -291,7 +291,7 @@ const columns = [
   },
   {
     field: "Total Predictions",
-    headerName: "Total Predictions",
+    headerName: "總預測數",
     description: "Total Predictions per task",
     headerAlign: "center",
     cellClassName: "super-app-theme--cell",
@@ -411,7 +411,7 @@ export default function TaskList({ ProjectData }) {
 
             return {
               id: item.id,
-              Complete: item.is_labeled ? "Yes" : "No",
+              Complete: item.is_labeled ? "是" : "否",
               "Total annotations": item.total_annotations,
               "Canceled annotations": item.cancelled_annotations,
               "Total Predictions": item.total_predictions,
