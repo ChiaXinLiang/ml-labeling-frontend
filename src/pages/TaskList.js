@@ -92,7 +92,7 @@ function ButtonGroup({ id }) {
             </p>
             <p style={{ marginTop: "38%", fontSize: "12px" }}>
               * 支援取決於瀏覽器
-              <br />* 想匯入更大的檔案，請使用雲端硬碟
+              {/* <br />* 想匯入更大的檔案，請使用雲端硬碟 */}
             </p>
           </div>
         </section>
