@@ -1,28 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Nav from "./Nav";
 
 const initialItems = [
   {
     id: 1,
-    name: "挖土機",
+    name: "挖土機", // excavator
     a: "",
     b: "",
   },
   {
     id: 2,
-    name: "昇空車",
+    name: "昇空車", // liftcar
     a: "",
     b: "",
   },
   {
     id: 3,
-    name: "直臂式高空作業車",
+    name: "直臂式高空作業車", // versalift
     a: "",
     b: "",
   },
   {
     id: 4,
-    name: "吊臂車",
+    name: "吊臂車", // crane
     a: "",
     b: "",
   },
@@ -37,6 +37,50 @@ export default function Forbidden() {
     }, {})
   );
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const url = new URL(`${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/getRadiusConfig`);
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.code === 0 && result.state === 1) {
+          const nameMapping = {
+            crane: "吊臂車",
+            excavator: "挖土機",
+            liftcar: "昇空車",
+            versalift: "直臂式高空作業車"
+          };
+
+          const fetchedItems = result.data.map(item => ({
+            id: item.vehicle_id,
+            name: nameMapping[item.vehicle_type] || item.vehicle_type,
+            a: item.a_radius,
+            b: item.b_radius
+          }));
+
+          setItems(fetchedItems);
+          const fetchedInputs = fetchedItems.reduce((acc, item) => {
+            acc[item.id] = { a: item.a, b: item.b };
+            return acc;
+          }, {});
+          setInputs(fetchedInputs);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleInputChange = (id, key, value) => {
     setInputs({
       ...inputs,
@@ -44,14 +88,34 @@ export default function Forbidden() {
     });
   };
 
-  const handleSubmit = (id) => {
+  const handleSubmit = async (id) => {
     const updatedItems = items.map((item) =>
       item.id === id ? { ...item, ...inputs[id] } : item
     );
     setItems(updatedItems);
+
+    try {
+      const url = `${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/setRadius`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          vehicle_id: id.toString(),
+          a_radius: inputs[id].a,
+          b_radius: inputs[id].b
+        })
+      });
+      const result = await response.json();
+      if (result.code === 0) {
+        alert("設定成功");
+      }
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
   };
 
-  //console.log("items", items);
   return (
     <div
       style={{
@@ -90,10 +154,11 @@ export default function Forbidden() {
                 width: "180px",
                 height: "180px",
                 borderRadius: "10px",
+                padding: "10px",
               }}
             >
-              <p style={{ height: "45px" }}>
-                {item.name} (a={item.a} 、b={item.b} )
+              <p style={{ margin: 0 }}>
+                {item.name} (a={inputs[item.id]?.a || ''} 、b={inputs[item.id]?.b || ''} )
               </p>
               <div style={{ marginBottom: "10px" }}>
                 <span>a : </span>
@@ -105,11 +170,11 @@ export default function Forbidden() {
                     border: "none",
                     backgroundColor: "rgba(217, 217, 217, 1)",
                   }}
-                  value={inputs[item.id].a}
+                  value={inputs[item.id]?.a || ""}
                   onChange={(e) =>
                     handleInputChange(item.id, "a", e.target.value)
                   }
-                ></input>
+                />
               </div>
               <div style={{ marginBottom: "10px" }}>
                 <span>b : </span>
@@ -121,11 +186,11 @@ export default function Forbidden() {
                     border: "none",
                     backgroundColor: "rgba(217, 217, 217, 1)",
                   }}
-                  value={inputs[item.id].b}
+                  value={inputs[item.id]?.b || ""}
                   onChange={(e) =>
                     handleInputChange(item.id, "b", e.target.value)
                   }
-                ></input>
+                />
               </div>
               <button
                 style={{
