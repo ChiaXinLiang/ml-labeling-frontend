@@ -92,7 +92,7 @@ function ButtonGroup({ id }) {
             </p>
             <p style={{ marginTop: "38%", fontSize: "12px" }}>
               * 支援取決於瀏覽器
-              <br />* 想匯入更大的檔案，請使用雲端硬碟
+              {/* <br />* 想匯入更大的檔案，請使用雲端硬碟 */}
             </p>
           </div>
         </section>
@@ -208,7 +208,7 @@ function ButtonGroup({ id }) {
       <button className="button">篩選器</button>
       <span style={{ fontSize: "14px", color: "gray" }}>順序</span>
       <button className="button">未設定</button>
-      <button className="button">標註所有任務</button>
+      <button className="button">驗證</button>
       <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: "10px" }}>
         <button
           style={{

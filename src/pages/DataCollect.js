@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Nav from "./Nav";
 import "./AddProject.css";
 
-function DeleteModal({ openModal, closeModal }) {
+function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
   const ref = React.useRef();
 
   React.useEffect(() => {
@@ -13,6 +13,31 @@ function DeleteModal({ openModal, closeModal }) {
       ref.current?.close();
     }
   }, [openModal]);
+
+  const handleDelete = () => {
+    selectedIds.forEach((id) => {
+      fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log(`Dataset ${id} deleted successfully:`, data);
+          onDelete(id); // 更新UI
+        })
+        .catch((error) => {
+          console.error(`Error deleting dataset ${id}:`, error);
+        });
+    });
+    closeModal();
+  };
 
   return (
     <React.Fragment>
@@ -33,7 +58,7 @@ function DeleteModal({ openModal, closeModal }) {
             }}
           >
             <img src="warn.png" alt="warn" width={30}></img>
-            確定刪除所選之專案嗎?
+            確定刪除所選之資料集嗎?
           </p>
           <div
             style={{
@@ -59,8 +84,8 @@ function DeleteModal({ openModal, closeModal }) {
               取消
             </button>
             <button
-              type="submit"
-              //onClick={handleSubmit}
+              type="button"
+              onClick={handleDelete}
               style={{
                 height: "30px",
                 borderRadius: "10px",
@@ -72,7 +97,7 @@ function DeleteModal({ openModal, closeModal }) {
                 cursor: "pointer",
               }}
             >
-              儲存
+              確定
             </button>
           </div>
         </div>
@@ -86,7 +111,6 @@ export default function AddDtaCollect({ ProjectData }) {
   const [datas, setData] = React.useState([]);
   const [selectedId, setSelectedId] = React.useState(null);
   const [selectedIds, setSelectedIds] = React.useState([]);
-  //console.log(selectedIds);
 
   React.useEffect(() => {
     setData(ProjectData.results);
@@ -107,12 +131,13 @@ export default function AddDtaCollect({ ProjectData }) {
         : [...prevSelectedIds, id]
     );
   };
-  //   const handleDelete = () => {
-  //     setData((prevData) =>
-  //       prevData.filter((data) => !selectedIds.includes(data.id))
-  //     );
-  //     setSelectedIds([]);
-  //   };
+
+  const handleDeleteDataset = (id) => {
+    setData((prevData) => prevData.filter((data) => data.id !== id));
+    setSelectedIds((prevSelectedIds) =>
+      prevSelectedIds.filter((selectedId) => selectedId !== id)
+    );
+  };
 
   return (
     <React.Fragment>
@@ -164,7 +189,12 @@ export default function AddDtaCollect({ ProjectData }) {
           >
             刪除資料集
           </button>
-          <DeleteModal openModal={open} closeModal={handleClose} />
+          <DeleteModal
+            openModal={open}
+            closeModal={handleClose}
+            selectedIds={selectedIds}
+            onDelete={handleDeleteDataset}
+          />
         </div>
         <div
           style={{
@@ -190,6 +220,7 @@ export default function AddDtaCollect({ ProjectData }) {
           {Array.isArray(datas) &&
             datas.map((data) => (
               <div
+                key={data.id}
                 style={{
                   borderRadius: "5px",
                   backgroundColor: data.id === selectedId ? "white" : "inherit",

@@ -1,7 +1,6 @@
-import * as React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Nav from "./Nav";
 import Step1 from "./Step1";
@@ -9,8 +8,8 @@ import Step2 from "./Step2";
 import "./AddProject.css";
 
 function Step0({ onUpdateTitle, onUpdateDescription }) {
-  const [Title, setTitle] = React.useState("");
-  const [Description, setDescription] = React.useState("");
+  const [Title, setTitle] = useState("");
+  const [Description, setDescription] = useState("");
 
   return (
     <div style={{ display: "flex", flexDirection: "column", margin: "30px" }}>
@@ -86,9 +85,9 @@ function Step0({ onUpdateTitle, onUpdateDescription }) {
 function Modal({ openModal, closeModal }) {
   const ref = useRef();
   const steps = ["專案名稱", "匯入資料", "設定標註"];
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [Title, setTitle] = React.useState("");
-  const [Description, setDescription] = React.useState("");
+  const [activeStep, setActiveStep] = useState(0);
+  const [Title, setTitle] = useState("");
+  const [Description, setDescription] = useState("");
 
   async function handleSubmit(e) {
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, {
@@ -163,7 +162,7 @@ function Modal({ openModal, closeModal }) {
             }}
           >
             <div
-              activeStep={activeStep}
+              activestep={activeStep.toString()}
               style={{
                 display: "flex",
                 gap: "50px",
@@ -222,7 +221,7 @@ function Modal({ openModal, closeModal }) {
                 cursor: "pointer",
               }}
             >
-              儲存
+              確定
             </button>
           </div>
         </div>
@@ -251,9 +250,9 @@ function Modal({ openModal, closeModal }) {
 }
 
 function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
-  const ref = React.useRef();
+  const ref = useRef();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (openModal) {
       ref.current?.showModal();
     } else {
@@ -266,7 +265,8 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
       fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json"        },
+          "Content-Type": "application/json",
+        },
       })
         .then((response) => {
           if (!response.ok) {
@@ -304,9 +304,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
             }}
           >
             <img src="warn.png" alt="warn" width={30} />
-            確定刪除所選之專案 (
-            {selectedIds.join(", ")}
-            ) 嗎?
+            確定刪除所選之專案嗎?
           </p>
           <div
             style={{
@@ -355,13 +353,15 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
 }
 
 export default function AddProject({ ProjectData }) {
-  const [open, setOpen] = React.useState(false);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
-  const [datas, setData] = React.useState([]);
-  const [selectedId, setSelectedId] = React.useState(null);
-  const [selectedIds, setSelectedIds] = React.useState([]);
+  const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [datas, setData] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [role1, setRole1] = useState("");
+  const [role2, setRole2] = useState("");
 
-  React.useEffect(() => {
+  useEffect(() => {
     setData(ProjectData.results);
   }, [ProjectData]);
 
@@ -396,6 +396,31 @@ export default function AddProject({ ProjectData }) {
     );
   };
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const jwtToken = urlParams.get("token");
+
+    if (jwtToken) {
+      fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/jwt?token=${jwtToken}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Decoded JWT data:", data);
+          if (data.decoded_token.roles.length >= 2) {
+            setRole1(data.decoded_token.roles[0].name);
+            setRole2(data.decoded_token.roles[1].name);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching decoded JWT data:", error);
+        });
+    }
+  }, []);
+
   return (
     <React.Fragment>
       <Nav />
@@ -414,7 +439,9 @@ export default function AddProject({ ProjectData }) {
             gap: "20px",
           }}
         >
-          <h3 style={{ marginRight: "500px" }}>標註專案列表</h3>
+          <h3 style={{ marginRight: "500px" }}>
+            標註專案列表 {role1 && role2 && ` ( / ${role1} / ${role2} )`}
+          </h3>
           <button
             style={{
               height: "30px",
