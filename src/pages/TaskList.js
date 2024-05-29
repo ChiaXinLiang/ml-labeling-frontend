@@ -208,7 +208,7 @@ function ButtonGroup({ id }) {
       <button className="button">篩選器</button>
       <span style={{ fontSize: "14px", color: "gray" }}>順序</span>
       <button className="button">未設定</button>
-      <button className="button">標註所有任務</button>
+      <button className="button">驗證</button>
       <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: "10px" }}>
         <button
           style={{
