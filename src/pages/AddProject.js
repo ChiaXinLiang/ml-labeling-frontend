@@ -54,7 +54,7 @@ function Step0({ onUpdateTitle, onUpdateDescription }) {
         }}
       >
         <label
-          htmlFor="name"
+          htmlFor="description"
           style={{ marginLeft: "-50%", marginBottom: "5px" }}
         >
           專案描述
@@ -410,9 +410,16 @@ export default function AddProject({ ProjectData }) {
         })
         .then((data) => {
           console.log("Decoded JWT data:", data);
-          if (data.decoded_token.roles.length >= 2) {
-            setRole1(data.decoded_token.roles[0].name);
-            setRole2(data.decoded_token.roles[1].name);
+          data = JSON.parse(data);
+
+          if (data.roles) {
+            const roles = data.roles;
+            const name = data.name;
+
+            if (roles.length > 0) {
+              setRole1(roles[0].name);
+              setRole2(name);
+            }
           }
         })
         .catch((error) => {
@@ -439,9 +446,18 @@ export default function AddProject({ ProjectData }) {
             gap: "20px",
           }}
         >
+          {/* <h3 style={{ marginRight: "500px" }}>
+            標註專案列表 {role1 && role2 && ` ( ${role1} / ${role2} )`}
+          </h3> */}
+
+
           <h3 style={{ marginRight: "500px" }}>
-            標註專案列表 {role1 && role2 && ` ( / ${role1} / ${role2} )`}
+            標註專案列表{" "}
+            {role1 && role2 && (
+              <span style={{ color: "blue", marginLeft: "60px" }}>  (  {role2} / {role1} ) </span>
+            )}
           </h3>
+
           <button
             style={{
               height: "30px",
@@ -530,13 +546,14 @@ export default function AddProject({ ProjectData }) {
                       flex: "3",
                     }}
                   >
-                    {" "}
                     <p>{data.title}</p>
                   </Link>
                   <p style={{ flex: "1" }}>{data.task_number}</p>
-                  <p style={{ flex: "1" }}>{data.num_tasks_with_annotations}</p>
-                  <p style={{ flex: "1" }}>{data.ground_truth_number}</p>
                   <p style={{ flex: "1" }}>
+                    {data.num_tasks_with_annotations}
+                  </p>
+                  <p style={{ flex: "1" }}>{data.ground_truth_number}</p>
+                  <div style={{ flex: "1" }}>
                     <Chip
                       label={
                         data.task_number > data.num_tasks_with_annotations
@@ -549,9 +566,8 @@ export default function AddProject({ ProjectData }) {
                         marginTop: "-5px",
                       }}
                     />
-                  </p>
+                  </div>
                   <p style={{ flex: "1" }}>
-                    {" "}
                     {new Date(data.created_at).toLocaleDateString()}
                   </p>
                   <p style={{ flex: "1" }}>
