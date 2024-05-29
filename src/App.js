@@ -26,7 +26,7 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          <Route path="/" element={<AddProject ProjectData={ProjectData} />} />
+          <Route path="/taipower-autolabe-beta" element={<AddProject ProjectData={ProjectData} />} />
           <Route path="/project" element={<TaskList />} />
           <Route
             path="/project/:id"
