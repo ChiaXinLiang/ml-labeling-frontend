@@ -22,11 +22,15 @@ function App() {
         console.error("Error fetching data:", error);
       });
   }, []);
+
   return (
     <BrowserRouter>
       <div className="App">
         <Routes>
-          <Route path="/taipower-autolabel-beta" element={<AddProject ProjectData={ProjectData} />} />
+          <Route
+            path="/taipower-autolabel-beta"
+            element={<AddProject ProjectData={ProjectData} />}
+          />
           <Route path="/project" element={<TaskList />} />
           <Route
             path="/project/:id"
