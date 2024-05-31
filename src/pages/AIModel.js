@@ -2,137 +2,21 @@ import React from "react";
 import Nav from "./Nav";
 import Form from "react-bootstrap/Form";
 import { useState } from "react";
-//import Offcanvas from "react-bootstrap/Offcanvas";
 import Drawer from "@mui/material/Drawer";
-import "./AIModel.css";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
+import "./AIModel.css";
 
-const initialItems = [
-  {
-    id: 1,
-    name: "背景",
-    a: "",
-    b: "",
-  },
-  {
-    id: 2,
-    name: "交通設備",
-    a: "",
-    b: "",
-  },
-  {
-    id: 3,
-    name: "侷限空間設備",
-    a: "",
-    b: "",
-  },
-  {
-    id: 4,
-    name: "異常災害",
-  },
-  {
-    id: 5,
-    name: "安全裝束",
-    a: "",
-    b: "",
-  },
-  {
-    id: 6,
-    name: "營建系車輛配件",
-    a: "",
-    b: "",
-  },
-  {
-    id: 7,
-    name: "電線桿配件",
-    a: "",
-    b: "",
-  },
-  {
-    id: 8,
-    name: "侷限空間配件",
-    a: "",
-    b: "",
-  },
-  {
-    id: 9,
-    name: "挖斗配件",
-    a: "",
-    b: "",
-  },
-];
-
-function TemporaryDrawer() {
-  const [open, setOpen] = React.useState(false);
-
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
-
-  return (
-    <div>
-      <button onClick={toggleDrawer(true)} className="aibutton">
-        訓練
-      </button>
-      <Drawer
-        open={open}
-        onClose={toggleDrawer(false)}
-        hideBackdrop={false}
-        anchor="right"
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            width: "500px",
-            marginTop: "40px",
-          }}
-          onClick={toggleDrawer(false)}
-        >
-          <div className="offcanvas-text">
-            <span>目前使用版本</span>
-            <span>equipment</span>
-          </div>
-          <div className="offcanvas-text">
-            <span>精確率</span>
-            <span>0</span>
-          </div>
-          <div className="offcanvas-text">
-            <span>召回率</span>
-            <span>0</span>
-          </div>
-          <button className="aibutton" style={{ height: "30px" }}>
-            佈署
-          </button>
-        </div>
-        <p className="offcanvas-p">安全帽版本模型列表</p>
-        <div className="offcanvas-box">
-          <div
-            style={{
-              display: "flex",
-              gap: "200px",
-              height: "30px",
-              marginTop: "10px",
-            }}
-          >
-            <span>xxxxxxxxxxxxxx</span>
-            <button className="offcanvas-button">切換</button>
-          </div>
-          <hr style={{ backgroundColor: "rgba(189, 188, 183, 1)" }} />
-        </div>
-      </Drawer>
-    </div>
-  );
-}
+const modelTypeMapping = {
+  background: "背景",
+  confinedSpaceComponent: "侷限空間配件",
+  confinedSpaceDevice: "侷限空間設備",
+  equipment: "安全裝束",
+  fireSmoke: "異常災害",
+  poleComponent: "電線桿配件",
+  trafficDevice: "交通設備",
+  vehicleComponent: "營建系車輛配件",
+  bucketComponent: "挖斗配件",
+};
 
 function SettingModal({ openModal, closeModal }) {
   const ref = React.useRef();
@@ -240,36 +124,46 @@ function SettingModal({ openModal, closeModal }) {
 
 export default function AIModel() {
   const [open, setOpen] = React.useState(false);
+  const [TrainOpen, setTrainOpen] = React.useState(false);
+  const [ModelData, setModelData] = React.useState([]);
+  const [openDrawerId, setOpenDrawerId] = useState(null);
 
-  const [items, setItems] = React.useState(initialItems);
-  const [inputs, setInputs] = React.useState(
-    initialItems.reduce((acc, item) => {
-      acc[item.id] = { a: item.a, b: item.b };
-      return acc;
-    }, {})
-  );
+  const toggleDrawer = (newOpen) => () => {
+    setTrainOpen(newOpen);
+  };
 
-  const handleClickOpen = () => {
+  const handleToggleDrawerId = (item) => {
+    setOpenDrawerId(item.model_id);
+  };
+
+  const handleTrainClick = (item) => {
+    handleToggleDrawerId(item);
+    toggleDrawer(true)();
+  };
+
+  React.useEffect(() => {
+    fetch(
+      `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        //console.log(data);
+        setModelData(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+  const handleClickOpen = (item) => {
     setOpen(true);
+    setOpenDrawerId(item.model_id);
   };
 
   const handleClose = () => {
     setOpen(false);
+    setOpenDrawerId(null);
   };
-
-  //   const handleInputChange = (id, key, value) => {
-  //     setInputs({
-  //       ...inputs,
-  //       [id]: { ...inputs[id], [key]: value },
-  //     });
-  //   };
-
-  //   const handleSubmit = (id) => {
-  //     const updatedItems = items.map((item) =>
-  //       item.id === id ? { ...item, ...inputs[id] } : item
-  //     );
-  //     setItems(updatedItems);
-  //   };
 
   return (
     <div
@@ -303,81 +197,193 @@ export default function AIModel() {
             marginTop: "20px",
           }}
         >
-          {items.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                backgroundColor: "white",
-                width: "180px",
-                height: "220px",
-                borderRadius: "10px",
-              }}
-            >
-              <p
-                style={{
-                  height: "16px",
-                  display: "flex",
-                  marginLeft: "10%",
-                  fontSize: "18px",
-                  marginTop: "10px",
-                }}
-              >
-                {item.name}
-              </p>
-              <p style={{ height: "10px", display: "flex", marginLeft: "10%" }}>
-                F Score
-              </p>
-              <span
-                style={{
-                  fontSize: "80px",
-                  color: "rgba(23, 115, 185, 0.77)",
-                  display: "flex",
-                  marginLeft: "10%",
-                  lineHeight: "80px",
-                }}
-              >
-                0
-              </span>
+          {Array.isArray(ModelData.data) &&
+            ModelData.data.map((item) => (
               <div
+                key={item.model_id}
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: "10px",
-                  fontSize: "14px",
-                  gap: "10px",
+                  backgroundColor: "white",
+                  width: "180px",
+                  height: "220px",
+                  borderRadius: "10px",
                 }}
               >
-                <span>yyyy/mm/dd</span>
-                <span>21:59:59</span>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "20px",
-                }}
-              >
-                <button
+                <p
                   style={{
-                    width: "60px",
-                    height: "25px",
-                    backgroundColor: "rgba(11, 151, 34, 1)",
-                    borderRadius: "5px",
-                    border: "none",
-                    color: "white",
-                    cursor: "pointer",
+                    height: "16px",
+                    display: "flex",
+                    marginLeft: "10%",
+                    fontSize: "18px",
+                    marginTop: "10px",
                   }}
-                  onClick={handleClickOpen}
                 >
-                  設定
-                </button>
-                <SettingModal openModal={open} closeModal={handleClose} />
-                {/* <TrainModal /> */}
-                <TemporaryDrawer />
+                  {modelTypeMapping[item.model_type]}
+                </p>
+                <p
+                  style={{ height: "10px", display: "flex", marginLeft: "10%" }}
+                >
+                  F Score
+                </p>
+                {item.weights
+                  .filter((weight) => weight.weight_state === true)
+                  .map((weight, index) => (
+                    <span
+                      style={{
+                        fontSize: "80px",
+                        color: "rgba(23, 115, 185, 0.77)",
+                        display: "flex",
+                        marginLeft: "10%",
+                        lineHeight: "80px",
+                      }}
+                    >
+                      {Number(weight.F_score).toFixed(1)}
+                    </span>
+                  ))}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: "10px",
+                    fontSize: "14px",
+                    gap: "10px",
+                  }}
+                >
+                  <span>yyyy/mm/dd</span>
+                  <span>21:59:59</span>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "20px",
+                  }}
+                >
+                  <button
+                    className="setbutton"
+                    onClick={() => handleClickOpen(item)}
+                  >
+                    設定
+                  </button>
+                  <SettingModal openModal={open} closeModal={handleClose} />
+                  <div>
+                    <button
+                      onClick={() => handleTrainClick(item)}
+                      className="aibutton"
+                    >
+                      訓練
+                    </button>
+                    <Drawer
+                      open={TrainOpen}
+                      onClose={toggleDrawer(false)}
+                      //hideBackdrop={true}
+                      anchor="right"
+                      ModalProps={{
+                        BackdropProps: {
+                          style: { backgroundColor: "inherit" },
+                        },
+                      }}
+                      PaperProps={{
+                        sx: {
+                          backgroundColor: "white",
+                          width: "500px",
+                        },
+                      }}
+                    >
+                      {Array.isArray(ModelData.data) &&
+                        ModelData.data
+                          .filter((item) => item.model_id === openDrawerId)
+                          .map((item) => (
+                            <>
+                              <div
+                                key={item.model_id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  width: "500px",
+                                  marginTop: "40px",
+                                }}
+                                onClick={toggleDrawer(false)}
+                              >
+                                {item.weights
+                                  .filter(
+                                    (weight) => weight.weight_state === true
+                                  )
+                                  .map((weight) => (
+                                    <>
+                                      <div className="offcanvas-text">
+                                        <span>目前使用版本</span>
+                                        <span>{weight.weight_name}</span>
+                                      </div>
+                                      <div className="offcanvas-text">
+                                        <span>精確率</span>
+                                        <span>
+                                          {Number(weight.Precision).toFixed(2)}
+                                        </span>
+                                      </div>
+                                      <div className="offcanvas-text">
+                                        <span>召回率</span>
+                                        <span>
+                                          {Number(weight.Recall).toFixed(2)}
+                                        </span>
+                                      </div>
+                                    </>
+                                  ))}
+                                <button
+                                  className="aibutton"
+                                  style={{ height: "30px" }}
+                                >
+                                  佈署
+                                </button>
+                              </div>
+                              <p className="offcanvas-p">安全帽版本模型列表</p>
+                              <div className="offcanvas-box">
+                                {item.weights.map((weight, index) => (
+                                  <>
+                                    <div
+                                      key={index}
+                                      style={{
+                                        width: "100%",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        //gap: "100px",
+                                        height: "50px",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          flex: "5",
+                                          marginLeft: "20px",
+                                        }}
+                                      >
+                                        {weight.weight_name}
+                                      </span>
+                                      <button
+                                        className="offcanvas-button"
+                                        style={{ flex: "1" }}
+                                      >
+                                        切換
+                                      </button>
+                                    </div>
+                                    <Divider
+                                      sx={{
+                                        border:
+                                          "0.8px solid rgba(189, 188, 183, 1)",
+                                        width: "100%",
+                                        height: "1px",
+                                      }}
+                                    />
+                                  </>
+                                ))}
+                              </div>
+                            </>
+                          ))}
+                    </Drawer>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
