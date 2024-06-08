@@ -417,8 +417,16 @@ export default function AddProject({ ProjectData }) {
             const name = data.name;
 
             if (roles.length > 0) {
+
+              // Set login user's role
               setRole1(roles[0].name);
               setRole2(name);
+
+              // Save to local storage
+              localStorage.setItem("profile", JSON.stringify(data));
+
+              // Remove token from URL
+              window.history.replaceState({}, document.title, "/");
             }
           }
         })
