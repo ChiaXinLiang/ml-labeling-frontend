@@ -228,7 +228,7 @@ export default function Nav({ projectDataById }) {
               onMouseLeave={() => setIsRoot(false)}
             >
               <Link
-                to={"/"}
+                to={"/taipower-autolabel-beta"}
                 style={{ color: "inherit", textDecoration: "none" }}
               >
                 {linkText}
