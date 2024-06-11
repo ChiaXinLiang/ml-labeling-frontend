@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Nav from "./Nav";
 import Step1 from "./Step1";
 import Step2 from "./Step2";
@@ -88,30 +89,83 @@ function Modal({ openModal, closeModal }) {
   const [activeStep, setActiveStep] = useState(0);
   const [Title, setTitle] = useState("");
   const [Description, setDescription] = useState("");
+  const [Knowledge, setKnowledge] = useState(null);
+  console.log(Knowledge);
 
-  async function handleSubmit(e) {
-    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title: Title, description: Description }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    e.preventDefault();
-    const data = {
-      title: Title,
-      description: Description,
+  // async function handleSubmit(e) {
+  //   fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ title: Title, description: Description }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log(data);
+  //     })
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  //   e.preventDefault();
+  //   const data = {
+  //     title: Title,
+  //     description: Description,
+  //   };
+  //   console.log(data);
+  //   closeModal();
+  // }
+  const HandleSubmit = () => {
+    const sendFirstRequest = async () => {
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
+          {
+            title: Title,
+            description: Description,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const projectId = response.data.id;
+
+        console.log("Project ID:", projectId);
+
+        const sendSecondRequest = async (id) => {
+          try {
+            const response = await axios.post(
+              `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`,
+              {
+                knowledge: Knowledge,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            console.log("Second API Response:", response.data);
+          } catch (error) {
+            console.error("Error in second request:", error);
+            alert("Error create project. Please try again.");
+          }
+        };
+
+        sendSecondRequest(projectId);
+      } catch (error) {
+        console.error("Error in first request:", error);
+        alert("Error create project. Please try again.");
+      }
     };
-    console.log(data);
+
+    sendFirstRequest();
     closeModal();
-  }
+  };
 
   const handleTitleChange = (Title) => {
     setTitle(Title);
@@ -209,7 +263,7 @@ function Modal({ openModal, closeModal }) {
             </button>
             <button
               type="submit"
-              onClick={handleSubmit}
+              onClick={HandleSubmit}
               style={{
                 height: "30px",
                 borderRadius: "10px",
@@ -241,7 +295,7 @@ function Modal({ openModal, closeModal }) {
             case 1:
               return <Step1 />;
             default:
-              return <Step2 />;
+              return <Step2 onKnowledgeDataChange={setKnowledge} />;
           }
         })()}
       </dialog>
@@ -450,11 +504,13 @@ export default function AddProject({ ProjectData }) {
             標註專案列表 {role1 && role2 && ` ( ${role1} / ${role2} )`}
           </h3> */}
 
-
           <h3 style={{ marginRight: "500px" }}>
             標註專案列表{" "}
             {role1 && role2 && (
-              <span style={{ color: "blue", marginLeft: "60px" }}>  (  {role2} / {role1} ) </span>
+              <span style={{ color: "blue", marginLeft: "60px" }}>
+                {" "}
+                ( {role2} / {role1} ){" "}
+              </span>
             )}
           </h3>
 
@@ -549,9 +605,7 @@ export default function AddProject({ ProjectData }) {
                     <p>{data.title}</p>
                   </Link>
                   <p style={{ flex: "1" }}>{data.task_number}</p>
-                  <p style={{ flex: "1" }}>
-                    {data.num_tasks_with_annotations}
-                  </p>
+                  <p style={{ flex: "1" }}>{data.num_tasks_with_annotations}</p>
                   <p style={{ flex: "1" }}>{data.ground_truth_number}</p>
                   <div style={{ flex: "1" }}>
                     <Chip
@@ -563,7 +617,7 @@ export default function AddProject({ ProjectData }) {
                       sx={{
                         backgroundColor: "rgba(255, 165, 99, 1)",
                         color: "white",
-                        marginTop: "-5px",
+                        marginTop: "10px",
                       }}
                     />
                   </div>
