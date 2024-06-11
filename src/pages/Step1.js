@@ -2,12 +2,16 @@ import * as React from "react";
 import Divider from "@mui/material/Divider";
 import { useDropzone } from "react-dropzone";
 
-export default function Step1() {
+export default function Step1({ onFileChange }) {
   const [fileUrl, setFileUrl] = React.useState([]);
   const [inputUrl, setInputUrl] = React.useState("");
   const [showPhoto, setShowPhoto] = React.useState(false); // New state for controlling the visibility of the Photo component
 
   const [file, setFile] = React.useState([]);
+
+  React.useEffect(() => {
+    onFileChange(file);
+  }, [file]);
 
   function Photo() {
     const onDrop = React.useCallback((acceptedFiles) => {

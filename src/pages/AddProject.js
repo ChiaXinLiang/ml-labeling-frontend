@@ -90,31 +90,9 @@ function Modal({ openModal, closeModal }) {
   const [Title, setTitle] = useState("");
   const [Description, setDescription] = useState("");
   const [Knowledge, setKnowledge] = useState(null);
-  console.log(Knowledge);
+  const [file, setFile] = useState(null);
+  //console.log(file);
 
-  // async function handleSubmit(e) {
-  //   fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ title: Title, description: Description }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //     });
-  //   e.preventDefault();
-  //   const data = {
-  //     title: Title,
-  //     description: Description,
-  //   };
-  //   console.log(data);
-  //   closeModal();
-  // }
   const HandleSubmit = () => {
     const sendFirstRequest = async () => {
       try {
@@ -150,6 +128,21 @@ function Modal({ openModal, closeModal }) {
             );
 
             console.log("Second API Response:", response.data);
+
+            const formData = new FormData();
+            formData.append("files", file);
+
+            const response2 = await axios.post(
+              `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+
+            console.log("Third API Response:", response2.data);
           } catch (error) {
             console.error("Error in second request:", error);
             alert("Error create project. Please try again.");
@@ -293,7 +286,7 @@ function Modal({ openModal, closeModal }) {
                 />
               );
             case 1:
-              return <Step1 />;
+              return <Step1 onFileChange={setFile} />;
             default:
               return <Step2 onKnowledgeDataChange={setKnowledge} />;
           }
