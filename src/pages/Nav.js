@@ -62,7 +62,11 @@ function SideMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={handleClose} component={Link} to="/taipower-autolabel-beta">
+        <MenuItem
+          onClick={handleClose}
+          component={Link}
+          to="/taipower-autolabel-beta"
+        >
           <img
             src="/map.png"
             alt="map"
@@ -186,7 +190,7 @@ export default function Nav({ projectDataById }) {
   const isProjectPage = location.pathname.startsWith("/project/");
   let linkText;
   switch (location.pathname) {
-    case "/":
+    case "/taipower-autolabel-beta":
       linkText = "專案";
       break;
     case "/datacollect":
