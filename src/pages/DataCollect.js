@@ -158,7 +158,8 @@ export default function AddDtaCollect({ ProjectData }) {
           }}
         >
           <h3 style={{ marginRight: "500px" }}>資料集列表</h3>
-          <Link to="/datacollect/add">
+          
+{/*           <Link to="/datacollect/add">
             <button
               style={{
                 height: "30px",
@@ -173,7 +174,8 @@ export default function AddDtaCollect({ ProjectData }) {
             >
               新增資料集
             </button>
-          </Link>
+          </Link> */}
+          
           <button
             style={{
               height: "30px",
