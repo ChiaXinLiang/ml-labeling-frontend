@@ -248,8 +248,8 @@ export default function AIModel() {
                     gap: "10px",
                   }}
                 >
-                  <span>yyyy/mm/dd</span>
-                  <span>21:59:59</span>
+                 {/*  <span>yyyy/mm/dd</span>
+                  <span>21:59:59</span> */}
                 </div>
 
                 <div
