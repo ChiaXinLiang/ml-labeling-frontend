@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Nav from "./Nav";
 import "./TaskList.css";
@@ -7,17 +7,19 @@ import Divider from "@mui/material/Divider";
 import { useDropzone } from "react-dropzone";
 
 function ButtonGroup({ id }) {
-  const [fileUrl, setFileUrl] = React.useState([]);
-  const [showPhoto, setShowPhoto] = React.useState(false);
-  const [file, setFile] = React.useState([]);
+  const [fileUrl, setFileUrl] = useState([]);
+  const [showPhoto, setShowPhoto] = useState(false);
+  const [files, setFiles] = useState([]);
 
   function UploadImg() {
-    const [inputUrl, setInputUrl] = React.useState("");
+    const [inputUrl, setInputUrl] = useState("");
 
-    const onDrop = React.useCallback((acceptedFiles) => {
+    const onDrop = useCallback((acceptedFiles) => {
       if (acceptedFiles?.length) {
-        const file = acceptedFiles[0];
-        setFile(Object.assign(file, { preview: URL.createObjectURL(file) }));
+        const newFiles = acceptedFiles.map((file) =>
+          Object.assign(file, { preview: URL.createObjectURL(file) })
+        );
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       }
     }, []);
 
@@ -64,18 +66,22 @@ function ButtonGroup({ id }) {
           <div {...getRootProps({ className: "dropzone" })}>
             <p>瀏覽或將檔案拖曳至此</p>
             <input {...getInputProps()} />
-            {file && file.preview ? (
-              <img
-                src={file.preview}
-                alt="preview"
-                width="100"
-                height="100"
-                style={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                }}
-              />
+            {files.length > 0 ? (
+              files.map((file, index) => (
+                <img
+                  key={index}
+                  src={file.preview}
+                  alt="preview"
+                  width="100"
+                  height="100"
+                  style={{
+                    maxHeight: "100%",
+                    maxWidth: "100%",
+                    objectFit: "contain",
+                    margin: "5px",
+                  }}
+                />
+              ))
             ) : (
               <img
                 src="/upload.png"
@@ -102,7 +108,9 @@ function ButtonGroup({ id }) {
 
   async function Import() {
     const formData = new FormData();
-    formData.append("files", file);
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`, {
       method: "POST",
@@ -119,7 +127,7 @@ function ButtonGroup({ id }) {
       });
   }
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
   };
@@ -130,7 +138,7 @@ function ButtonGroup({ id }) {
   function Modal({ openModal, closeModal }) {
     const ref = useRef();
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (openModal) {
         ref.current?.showModal();
       } else {
@@ -370,15 +378,15 @@ function TaskTable({ datas }) {
 }
 
 export default function TaskList({ ProjectData }) {
-  const [projectDatas, setProjectData] = React.useState([]);
-  const [datas, setDatas] = React.useState([]);
+  const [projectDatas, setProjectData] = useState([]);
+  const [datas, setDatas] = useState([]);
   const { id } = useParams();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setProjectData(ProjectData.results);
   }, [ProjectData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks/?project=${id}`, {

@@ -90,7 +90,9 @@ function Modal({ openModal, closeModal }) {
   const [Title, setTitle] = useState("");
   const [Description, setDescription] = useState("");
   const [Knowledge, setKnowledge] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+
+  // const [file, setFile] = useState(null);
   //console.log(file);
 
   const HandleSubmit = () => {
@@ -130,7 +132,13 @@ function Modal({ openModal, closeModal }) {
             console.log("Second API Response:", response.data);
 
             const formData = new FormData();
-            formData.append("files", file);
+
+            files.forEach((file) => {
+              // console.log("File:", file);
+              formData.append("files", file);
+            });
+
+            // formData.append("files", file);
 
             const response2 = await axios.post(
               `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
@@ -286,7 +294,7 @@ function Modal({ openModal, closeModal }) {
                 />
               );
             case 1:
-              return <Step1 onFileChange={setFile} />;
+              return <Step1 onFileChange={setFiles} />;
             default:
               return <Step2 onKnowledgeDataChange={setKnowledge} />;
           }

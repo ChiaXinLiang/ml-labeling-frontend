@@ -1,51 +1,51 @@
 import * as React from "react";
 import Divider from "@mui/material/Divider";
 import { useDropzone } from "react-dropzone";
+import axios from "axios";
 
-export default function Step1({ onFileChange }) {
+export default function Step1({ onFileChange, Title, Description, Knowledge, closeModal }) {
   const [fileUrl, setFileUrl] = React.useState([]);
   const [inputUrl, setInputUrl] = React.useState("");
-  const [showPhoto, setShowPhoto] = React.useState(false); // New state for controlling the visibility of the Photo component
-
-  const [file, setFile] = React.useState([]);
+  const [showPhoto, setShowPhoto] = React.useState(false);
+  const [files, setFiles] = React.useState([]);
 
   React.useEffect(() => {
-    onFileChange(file);
-  }, [file]);
+    onFileChange(files);
+  }, [files]);
 
   function Photo() {
     const onDrop = React.useCallback((acceptedFiles) => {
       if (acceptedFiles?.length) {
-        const file = acceptedFiles[0];
-        setFile(Object.assign(file, { preview: URL.createObjectURL(file) }));
+        const newFiles = acceptedFiles.map((file) =>
+          Object.assign(file, { preview: URL.createObjectURL(file) })
+        );
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
       }
     }, []);
 
-    const {
-      getRootProps,
-      getInputProps,
-      // isFocused,
-      // isDragAccept,
-      // isDragReject,
-    } = useDropzone({ accept: { "image/*": [] }, onDrop });
+    const { getRootProps, getInputProps } = useDropzone({ accept: { "image/*": [] }, onDrop });
 
     return (
       <section className="filecontainer">
         <div {...getRootProps({ className: "dropzone" })}>
           <p>瀏覽或將檔案拖曳至此</p>
           <input {...getInputProps()} />
-          {file && file.preview ? (
-            <img
-              src={file.preview}
-              alt="preview"
-              width="100"
-              height="100"
-              style={{
-                maxHeight: "100%",
-                maxWidth: "100%",
-                objectFit: "contain",
-              }}
-            />
+          {files.length > 0 ? (
+            files.map((file, index) => (
+              <img
+                key={index}
+                src={file.preview}
+                alt="preview"
+                width="100"
+                height="100"
+                style={{
+                  maxHeight: "100%",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  margin: "5px",
+                }}
+              />
+            ))
           ) : (
             <img
               src="/upload.png"
@@ -70,7 +70,7 @@ export default function Step1({ onFileChange }) {
   }
 
   const handleImg = () => {
-    setShowPhoto(true); // Show the Photo component when the button is clicked
+    setShowPhoto(true);
   };
 
   const handleInputChange = (e) => {
@@ -79,6 +79,75 @@ export default function Step1({ onFileChange }) {
 
   const handleButtonClick = () => {
     setFileUrl([...fileUrl, inputUrl]);
+  };
+
+  const HandleSubmit = () => {
+    const sendFirstRequest = async () => {
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
+          {
+            title: Title,
+            description: Description,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const projectId = response.data.id;
+
+        console.log("Project ID:", projectId);
+
+        const sendSecondRequest = async (id) => {
+          try {
+            const response = await axios.post(
+              `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`,
+              {
+                knowledge: Knowledge,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            console.log("Second API Response:", response.data);
+
+            const formData = new FormData();
+            files.forEach((file) => {
+              formData.append("files", file);
+            });
+
+            const response2 = await axios.post(
+              `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+
+            console.log("Third API Response:", response2.data);
+          } catch (error) {
+            console.error("Error in second request:", error);
+            alert("Error create project. Please try again.");
+          }
+        };
+
+        sendSecondRequest(projectId);
+      } catch (error) {
+        console.error("Error in first request:", error);
+        alert("Error create project. Please try again.");
+      }
+    };
+
+    sendFirstRequest();
+    closeModal();
   };
 
   return (
@@ -122,6 +191,7 @@ export default function Step1({ onFileChange }) {
           <div style={{ flex: "3" }}>
             {fileUrl.map((url) => (
               <div
+                key={url}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -169,6 +239,7 @@ export default function Step1({ onFileChange }) {
         variant="middle"
         sx={{ backgroundColor: "rgba(122, 122, 120, 1)", marginTop: "30px" }}
       />
+      <button onClick={HandleSubmit}>提交</button>
     </>
   );
 }
