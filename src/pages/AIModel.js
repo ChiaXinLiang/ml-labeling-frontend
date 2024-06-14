@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Nav from "./Nav";
 import Form from "react-bootstrap/Form";
-import { useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import Divider from "@mui/material/Divider";
 import "./AIModel.css";
@@ -123,10 +122,12 @@ function SettingModal({ openModal, closeModal }) {
 }
 
 export default function AIModel() {
-  const [open, setOpen] = React.useState(false);
-  const [TrainOpen, setTrainOpen] = React.useState(false);
-  const [ModelData, setModelData] = React.useState([]);
+  const [open, setOpen] = useState(false);
+  const [TrainOpen, setTrainOpen] = useState(false);
+  const [ModelData, setModelData] = useState([]);
   const [openDrawerId, setOpenDrawerId] = useState(null);
+  const [activeButton, setActiveButton] = useState(null);
+  const [isTraining, setIsTraining] = useState(false);
 
   const toggleDrawer = (newOpen) => () => {
     setTrainOpen(newOpen);
@@ -141,13 +142,16 @@ export default function AIModel() {
     toggleDrawer(true)();
   };
 
-  React.useEffect(() => {
+  const handleButtonClick = (index) => {
+    setActiveButton(index);
+  };
+
+  useEffect(() => {
     fetch(
       `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`
     )
       .then((res) => res.json())
       .then((data) => {
-        //console.log(data);
         setModelData(data);
       })
       .catch((error) => {
@@ -164,6 +168,58 @@ export default function AIModel() {
     setOpen(false);
     setOpenDrawerId(null);
   };
+
+  const handleStartTrainClick = () => {
+    // Send Get request to the endpoint
+    fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+
+        if (data.state === true) {
+          // Start training
+          alert("開始訓練");
+          setIsTraining(true);
+
+          // Start training
+          const myHeaders = new Headers();
+          myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+          const urlencoded = new URLSearchParams();
+          urlencoded.append("weight", "1");
+          urlencoded.append("weight_name", "2");
+          urlencoded.append("model_id", "3");
+          urlencoded.append("train_path", "4");
+          urlencoded.append("valid_path", "5");
+
+          const requestOptions = {
+            method: "PUT",
+            headers: myHeaders,
+            body: urlencoded,
+            redirect: "follow"
+          };
+
+          fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`, requestOptions)
+            .then((response) => response.text())
+            .then((result) => console.log(result))
+            .catch((error) => console.error(error));
+          // END
+
+        } else {
+          alert("訓練中，請稍後再試");
+          setIsTraining(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  useEffect(() => {
+    if (isTraining) {
+      document.getElementById("startTrain").innerText = "訓練中，請稍後再試";
+    }
+  }, [isTraining]);
 
   return (
     <div
@@ -228,6 +284,7 @@ export default function AIModel() {
                   .filter((weight) => weight.weight_state === true)
                   .map((weight, index) => (
                     <span
+                      key={index}
                       style={{
                         fontSize: "80px",
                         color: "rgba(23, 115, 185, 0.77)",
@@ -248,7 +305,7 @@ export default function AIModel() {
                     gap: "10px",
                   }}
                 >
-                 {/*  <span>yyyy/mm/dd</span>
+                  {/* <span>yyyy/mm/dd</span>
                   <span>21:59:59</span> */}
                 </div>
 
@@ -259,12 +316,12 @@ export default function AIModel() {
                     gap: "20px",
                   }}
                 >
-                  <button
+                  {/* <button
                     className="setbutton"
                     onClick={() => handleClickOpen(item)}
                   >
                     設定
-                  </button>
+                  </button> */}
                   <SettingModal openModal={open} closeModal={handleClose} />
                   <div>
                     <button
@@ -310,7 +367,7 @@ export default function AIModel() {
                                     (weight) => weight.weight_state === true
                                   )
                                   .map((weight) => (
-                                    <>
+                                    <React.Fragment key={weight.weight_name}>
                                       <div className="offcanvas-text">
                                         <span>目前使用版本</span>
                                         <span>{weight.weight_name}</span>
@@ -327,27 +384,48 @@ export default function AIModel() {
                                           {Number(weight.Recall).toFixed(2)}
                                         </span>
                                       </div>
-                                    </>
+                                    </React.Fragment>
                                   ))}
-                                <button
-                                  className="aibutton"
-                                  style={{ height: "30px" }}
-                                >
-                                  佈署
-                                </button>
                               </div>
+                              <h4
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  width: "500px",
+                                  marginLeft: "40px",
+                                }}
+                              >
+                                功能:
+                              </h4>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  width: "500px",
+                                  marginLeft: "40px",
+                                }}
+                              >
+                                <button
+                                  id="startTrain"
+                                  className="aibutton"
+                                  onClick={() => handleStartTrainClick()}
+                                  style={{ marginRight: "10px", width: "100px" }}
+                                >
+                                  訓練與佈署
+                                </button>
+                                {/* <button className="aibutton">佈署</button> */}
+                              </div>
+
                               <p className="offcanvas-p">安全帽版本模型列表</p>
                               <div className="offcanvas-box">
                                 {item.weights.map((weight, index) => (
-                                  <>
+                                  <React.Fragment key={weight.weight_name}>
                                     <div
-                                      key={index}
                                       style={{
                                         width: "100%",
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center",
-                                        //gap: "100px",
                                         height: "50px",
                                       }}
                                     >
@@ -362,6 +440,8 @@ export default function AIModel() {
                                       <button
                                         className="offcanvas-button"
                                         style={{ flex: "1" }}
+                                        onClick={() => handleButtonClick(index)}
+                                        hidden={activeButton === index}
                                       >
                                         切換
                                       </button>
@@ -374,7 +454,7 @@ export default function AIModel() {
                                         height: "1px",
                                       }}
                                     />
-                                  </>
+                                  </React.Fragment>
                                 ))}
                               </div>
                             </>
