@@ -93,7 +93,7 @@ const optionsMark = {
 export default function Step2({ onKnowledgeDataChange }) {
   const [selectedModel, setSelectedModel] = useState("0");
   const [selectKnowledge, setSelectKnowledge] = useState([]);
-  //console.log(selectKnowledge);
+  //console.log(selectedModel);
 
   const handleAddObject = () => {
     const model = document.querySelector(
@@ -105,10 +105,24 @@ export default function Step2({ onKnowledgeDataChange }) {
     const shape = document.querySelector('input[name="option"]').value;
 
     const newObject = {
-      模型名稱: optionsForModel[model][0],
-      分類: optionsForModel[model][category],
+      模型名稱: optionsForModel[model] ? optionsForModel[model][0] : undefined,
+      分類: optionsForModel[model]
+        ? optionsForModel[model][category]
+        : undefined,
       形狀: shape,
     };
+
+    if (
+      selectedModel === "0" ||
+      !model ||
+      model === "0" ||
+      !category ||
+      category === "分類" ||
+      !shape
+    ) {
+      alert("請選擇模型名稱、分類");
+      return;
+    }
 
     setSelectKnowledge((prevKnowledge) => {
       const newKnowledge = [...prevKnowledge, newObject];
@@ -215,7 +229,7 @@ export default function Step2({ onKnowledgeDataChange }) {
                       borderRadius: "5px",
                     }}
                   >
-                    <option>模型名稱</option>
+                    <option value="0">模型名稱</option>
                     <option value="1">背景模型</option>
                     <option value="2">交通設備模型</option>
                     <option value="3">侷限空間設備模型</option>
@@ -270,62 +284,60 @@ export default function Step2({ onKnowledgeDataChange }) {
                     }}
                     onClick={() => {
                       handleAddObject();
-                      //onKnowledgeDataChange(selectKnowledge);
                     }}
                   >
                     新增
                   </button>
                 </div>
-                <div
-                  style={{
-                    width: "600px",
-                    height: "145px",
-                    overflowY: "scroll",
-                    overflowX: "hidden",
-                    marginTop: "50px",
-                    marginLeft: "-600px",
-                  }}
-                >
-                  {selectKnowledge.map((item, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                      }}
-                    >
-                      <p>模型名稱: {item.模型名稱}</p>
-                      <p>分類: {item.分類}</p>
-                      <p>形狀: {item.形狀}</p>
-                      <div
-                        style={{
-                          flex: "1",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginTop: "10px",
-                          marginRight: "10px",
-                        }}
-                      >
-                        <button
-                          style={{
-                            width: "80px",
-                            height: "30px",
-                            borderRadius: "10px",
-                            border: "none",
-                            color: "rgba(23, 115, 185, 1)",
-                            cursor: "pointer",
-                          }}
-                          onClick={() => deleteKnowledge(index)}
-                        >
-                          刪除
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
+        </div>
+        <div
+          style={{
+            width: "98%",
+            height: "145px",
+            overflowY: "scroll",
+            overflowX: "hidden",
+            marginLeft: "2%",
+          }}
+        >
+          {selectKnowledge.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+              }}
+            >
+              <p>模型名稱: {item.模型名稱}</p>
+              <p>分類: {item.分類}</p>
+              <p>形狀: {item.形狀}</p>
+              <div
+                style={{
+                  flex: "1",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: "10px",
+                  marginRight: "10px",
+                }}
+              >
+                <button
+                  style={{
+                    width: "80px",
+                    height: "30px",
+                    borderRadius: "10px",
+                    border: "none",
+                    color: "rgba(23, 115, 185, 1)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => deleteKnowledge(index)}
+                >
+                  刪除
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
