@@ -117,7 +117,8 @@ function Modal({ openModal, closeModal }) {
 
         const sendSecondRequest = async (id) => {
           try {
-            const response = await axios.post(
+            // FIXME: 空知識本體會造成底下的 API 無法運作
+            /* const response = await axios.post(
               `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`,
               {
                 knowledge: Knowledge,
@@ -129,7 +130,7 @@ function Modal({ openModal, closeModal }) {
               }
             );
 
-            console.log("Second API Response:", response.data);
+            console.log("Second API Response:", response.data); */
 
             const formData = new FormData();
 
