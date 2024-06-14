@@ -6,7 +6,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import Divider from "@mui/material/Divider";
 import { useDropzone } from "react-dropzone";
 
-function ButtonGroup({ id }) {
+function ButtonGroup({ id, selectedIds, handleDelete }) {
   const [fileUrl, setFileUrl] = useState([]);
   const [showPhoto, setShowPhoto] = useState(false);
   const [files, setFiles] = useState([]);
@@ -98,7 +98,6 @@ function ButtonGroup({ id }) {
             </p>
             <p style={{ marginTop: "38%", fontSize: "12px" }}>
               * 支援取決於瀏覽器
-              {/* <br />* 想匯入更大的檔案，請使用雲端硬碟 */}
             </p>
           </div>
         </section>
@@ -209,6 +208,7 @@ function ButtonGroup({ id }) {
       });
   }
 
+
   return (
     <div style={{ display: "flex", gap: "20px", alignItems: "center", marginLeft: "30px", marginTop: "20px" }}>
       <button className="button">操作</button>
@@ -217,6 +217,9 @@ function ButtonGroup({ id }) {
       <span style={{ fontSize: "14px", color: "gray" }}>順序</span>
       <button className="button">未設定</button>
       <button className="button">驗證</button>
+      <button className="button" onClick={handleDelete}>
+        刪除
+      </button>
       <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: "10px" }}>
         <button
           style={{
@@ -338,12 +341,23 @@ const columns = [
   },
 ];
 
-function TaskTable({ datas }) {
+function TaskTable({ datas, selectedIds, setSelectedIds }) {
   const { id: projectId } = useParams();
+
   const handleRowClick = (params) => {
     const taskId = params.id;
     const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${taskId}`;
     window.location.href = url;
+  };
+
+  const handleSelectionChange = (ids) => {
+    setSelectedIds((prevSelectedIds) => {
+      const updatedSelectedIds = prevSelectedIds.includes(ids[0])
+        ? prevSelectedIds.filter((id) => id !== ids[0])
+        : [...prevSelectedIds, ...ids];
+
+      return updatedSelectedIds;
+    });
   };
 
   return (
@@ -355,6 +369,12 @@ function TaskTable({ datas }) {
         disableColumnMenu
         disableColumnSelector
         onRowClick={handleRowClick}
+        checkboxSelection
+        selectionModel={selectedIds}
+        onCellClick={(e) => {
+          handleSelectionChange([e.id]);
+        }}
+
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 100 },
@@ -371,7 +391,6 @@ function TaskTable({ datas }) {
             textAlign: "center",
           },
         }}
-        checkboxSelection
       />
     </div>
   );
@@ -380,6 +399,7 @@ function TaskTable({ datas }) {
 export default function TaskList({ ProjectData }) {
   const [projectDatas, setProjectData] = useState([]);
   const [datas, setDatas] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const { id } = useParams();
 
   useEffect(() => {
@@ -399,20 +419,17 @@ export default function TaskList({ ProjectData }) {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
         if (Array.isArray(data.tasks)) {
+
           const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
+
             const imageResponse = await fetch(`${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`, {
               headers: {
                 'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
                 'Content-Type': 'application/json'
               }
             });
-
-            if (!imageResponse.ok) {
-              throw new Error(`Image HTTP error! status: ${imageResponse.status}`);
-            }
 
             const imageBlob = await imageResponse.blob();
             const imageUrl = URL.createObjectURL(imageBlob);
@@ -448,11 +465,42 @@ export default function TaskList({ ProjectData }) {
     projectDataById = projectDatas.find((project) => project.id === Number(id));
   }
 
+  const handleDelete = async () => {
+    const idsString = JSON.stringify(selectedIds);
+    try {
+      const url = new URL(`${process.env.REACT_APP_LAYER2_ENDPOINT}/tasks/delete/`);
+      url.searchParams.append('ids', idsString);
+
+      const response = await fetch(url.href, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      alert("任務刪除成功");
+
+      // Update the state to remove the deleted tasks from the table
+      setDatas((prevDatas) => prevDatas.filter((task) => !selectedIds.includes(task.id)));
+      setSelectedIds([]);
+
+    } catch (error) {
+      console.error("Error deleting tasks:", error);
+      alert("刪除任務時發生錯誤");
+    }
+  };
+
   return (
     <div>
       <Nav projectDataById={projectDataById} />
-      <ButtonGroup id={id} />
-      <TaskTable datas={datas} />
+      <ButtonGroup id={id} selectedIds={selectedIds} handleDelete={handleDelete} />
+      <TaskTable datas={datas} selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
     </div>
   );
 }
