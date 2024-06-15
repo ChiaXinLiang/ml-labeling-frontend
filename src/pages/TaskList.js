@@ -6,7 +6,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import Divider from "@mui/material/Divider";
 import { useDropzone } from "react-dropzone";
 
-function ButtonGroup({ id, selectedIds, handleDelete }) {
+function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
   const [fileUrl, setFileUrl] = useState([]);
   const [showPhoto, setShowPhoto] = useState(false);
   const [files, setFiles] = useState([]);
@@ -216,7 +216,7 @@ function ButtonGroup({ id, selectedIds, handleDelete }) {
       <button className="button">篩選器</button>
       <span style={{ fontSize: "14px", color: "gray" }}>順序</span>
       <button className="button">未設定</button>
-      <button className="button">驗證</button>
+      <button className="button" onClick={handleVerify}>驗證</button>
       <button className="button" onClick={handleDelete}>
         刪除
       </button>
@@ -317,6 +317,13 @@ const columns = [
     width: 200,
   },
   {
+    field: "Verified By",
+    headerName: "驗證者",
+    headerAlign: "center",
+    cellClassName: "super-app-theme--cell",
+    width: 200,
+  },
+  {
     field: "file",
     headerName: "照片",
     sortable: false,
@@ -345,6 +352,32 @@ function TaskTable({ datas, selectedIds, setSelectedIds }) {
   const { id: projectId } = useParams();
 
   const handleRowClick = (params) => {
+
+    // Get profile in local storage
+    const profile = JSON.parse(localStorage.getItem("profile"));
+    if (profile) {
+      // Set processor to API server
+      const url = `${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`;
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task_id: params.row.id.toString(),
+          processor: {"annotator":profile.name, "verifier":""}
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(JSON.stringify(data));
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+
     const taskId = params.id;
     const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${taskId}`;
     window.location.href = url;
@@ -421,9 +454,8 @@ export default function TaskList({ ProjectData }) {
         }
         const data = await response.json();
         if (Array.isArray(data.tasks)) {
-
           const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
-
+            // Fetch the image
             const imageResponse = await fetch(`${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`, {
               headers: {
                 'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
@@ -434,13 +466,24 @@ export default function TaskList({ ProjectData }) {
             const imageBlob = await imageResponse.blob();
             const imageUrl = URL.createObjectURL(imageBlob);
 
+            // Fetch the processor data
+            const processorResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`, {
+              method: "GET",
+              headers: {
+                'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            const processorData = await processorResponse.json();
             return {
               id: item.id,
               Complete: item.is_labeled ? "是" : "否",
               "Total annotations": item.total_annotations,
               "Canceled annotations": item.cancelled_annotations,
               "Total Predictions": item.total_predictions,
-              "Annotated By": item.annotators.join(", "),
+              "Annotated By": processorData.processor.annotator || item.annotators.join(", "),
+              "Verified By": processorData.processor.verifier || "",
               file: {
                 src: imageUrl,
                 alt: "Image",
@@ -496,10 +539,48 @@ export default function TaskList({ ProjectData }) {
     }
   };
 
+  const handleVerify = async () => {
+    // Get profile from local storage
+    const profile = JSON.parse(localStorage.getItem("profile"));
+    if (!profile || !profile.name) {
+      console.error("Profile or profile name not found in local storage");
+      return;
+    }
+
+    for (const taskId of selectedIds) {
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const raw = JSON.stringify({
+        task_id: taskId.toString(),
+        processor: {
+          annotator: "",
+          verifier: profile.name,
+        },
+      });
+
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+
+      try {
+        const response = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`, requestOptions);
+        const result = await response.text();
+        console.log(result);
+        alert("任務驗證成功");
+      } catch (error) {
+        console.error("Error verifying task:", error);
+      }
+    }
+  };
+
   return (
     <div>
       <Nav projectDataById={projectDataById} />
-      <ButtonGroup id={id} selectedIds={selectedIds} handleDelete={handleDelete} />
+      <ButtonGroup id={id} selectedIds={selectedIds} handleDelete={handleDelete} handleVerify={handleVerify} />
       <TaskTable datas={datas} selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
     </div>
   );
