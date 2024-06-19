@@ -186,11 +186,11 @@ export default function AIModel() {
           myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
           const urlencoded = new URLSearchParams();
-          urlencoded.append("weight", "1");
-          urlencoded.append("weight_name", "2");
-          urlencoded.append("model_id", "3");
-          urlencoded.append("train_path", "4");
-          urlencoded.append("valid_path", "5");
+          urlencoded.append("weight", "93");
+          urlencoded.append("weight_name", "tpc_test_v1");
+          urlencoded.append("model_id", "1");
+          urlencoded.append("train_path", "../train");
+          urlencoded.append("valid_path", "../val");
 
           const requestOptions = {
             method: "PUT",
