@@ -1,5 +1,7 @@
 FROM node:18
 
+RUN useradd -ms /bin/bash labeling-frontend
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -13,5 +15,7 @@ RUN npm run build
 ENV PORT=3001
 
 EXPOSE 3001
+
+USER labeling-frontend
 
 CMD ["sh", "-c", "PORT=3001 npm run start"]
