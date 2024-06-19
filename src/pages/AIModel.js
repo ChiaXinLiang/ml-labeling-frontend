@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Nav from "./Nav";
 import Form from "react-bootstrap/Form";
 import Drawer from "@mui/material/Drawer";
@@ -18,9 +18,9 @@ const modelTypeMapping = {
 };
 
 function SettingModal({ openModal, closeModal }) {
-  const ref = React.useRef();
+  const ref = useRef();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ref.current !== null) {
       if (openModal) {
         ref.current.showModal();
@@ -68,9 +68,6 @@ function SettingModal({ openModal, closeModal }) {
                 className="dialog-form"
               >
                 <option>選擇模型名稱</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
               </Form.Select>
             </div>
             <div className="dialog-box">
@@ -80,9 +77,6 @@ function SettingModal({ openModal, closeModal }) {
                 className="dialog-form"
               >
                 <option>資料集列表</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
               </Form.Select>
             </div>
             <div className="dialog-box">
@@ -121,6 +115,183 @@ function SettingModal({ openModal, closeModal }) {
   );
 }
 
+function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
+  const ref = useRef();
+  const [modelOptions, setModelOptions] = useState([]);
+  const [datasetOptions, setDatasetOptions] = useState([]);
+
+  useEffect(() => {
+    if (ref.current !== null) {
+      if (openHelloModal) {
+        ref.current.showModal();
+      } else {
+        ref.current.close();
+      }
+    }
+  }, [openHelloModal]);
+
+  useEffect(() => {
+    const requestOptions = {
+      method: "GET",
+      redirect: "follow",
+    };
+
+    fetch(
+      `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`,
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        const options = result.data.flatMap((model) =>
+          model.weights.map((weight) => ({
+            modelType: model.model_type,
+            weightName: weight.weight_name,
+          }))
+        );
+        setModelOptions(options);
+      })
+      .catch((error) => console.error(error));
+  }, []);
+
+  useEffect(() => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append(
+      "Authorization",
+      `Token ${process.env.REACT_APP_API_TOKEN}`
+    );
+
+    const requestOptions = {
+      method: "GET",
+      headers: myHeaders,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/knowledge`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        const options = Object.values(result).flat();
+        setDatasetOptions(options);
+      })
+      .catch((error) => console.error(error));
+  }, []);
+
+  const handleOverlayClick = (event) => {
+    if (event.target === ref.current) {
+      closeHelloModal();
+    }
+  };
+
+  const handleConfirm = () => {
+    onConfirm();
+    closeHelloModal();
+  };
+
+  return (
+    <React.Fragment>
+      <dialog
+        ref={ref}
+        onClick={handleOverlayClick}
+        onCancel={closeHelloModal}
+        className="helloModal"
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "20px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+              marginBottom: "20%",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <label>基礎訓練模型</label>
+              <select style={{ marginLeft: "10px" }}>
+                {modelOptions.map((option, index) => (
+                  <option key={index} value={option.weightName}>
+                    {option.weightName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <label>選擇訓練集</label>
+              <select style={{ marginLeft: "10px" }}>
+                {datasetOptions.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <label>想儲存的模型名稱</label>
+              <input
+                type="text"
+                value="tpc_test_v1"
+                style={{
+                  marginLeft: "10px",
+                  borderRadius: "5px",
+                  backgroundColor: "rgba(217, 217, 217, 1)",
+                  border: "none",
+                  padding: "5px",
+                }}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            style={{
+              height: "30px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(23, 115, 185, 1)",
+              color: "white",
+              boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+              border: "none",
+              width: "80px",
+              cursor: "pointer",
+            }}
+            onClick={handleConfirm}
+          >
+            確定
+          </button>
+        </div>
+      </dialog>
+    </React.Fragment>
+  );
+}
+
 export default function AIModel() {
   const [open, setOpen] = useState(false);
   const [TrainOpen, setTrainOpen] = useState(false);
@@ -128,6 +299,10 @@ export default function AIModel() {
   const [openDrawerId, setOpenDrawerId] = useState(null);
   const [activeButton, setActiveButton] = useState(null);
   const [isTraining, setIsTraining] = useState(false);
+  const [HelloOpen, setHelloOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const startTrainButtonRef = useRef(null);
 
   const toggleDrawer = (newOpen) => () => {
     setTrainOpen(newOpen);
@@ -137,13 +312,69 @@ export default function AIModel() {
     setOpenDrawerId(item.model_id);
   };
 
-  const handleTrainClick = (item) => {
-    handleToggleDrawerId(item);
-    toggleDrawer(true)();
+  const handleDeployClick = (item) => {
+    setSelectedItem(item);
+    setHelloOpen(true);
   };
 
-  const handleButtonClick = (index) => {
-    setActiveButton(index);
+  const handleStartTrainClick = () => {
+    fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+
+        if (data.state === true) {
+          // Start training
+          alert("開始訓練");
+          setIsTraining(true);
+
+          const myHeaders = new Headers();
+          myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+          const urlencoded = new URLSearchParams();
+          urlencoded.append("weight", "93");
+          urlencoded.append("weight_name", "tpc_test_v1");
+          urlencoded.append("model_id", selectedItem.model_id);
+          urlencoded.append("train_path", "../train");
+          urlencoded.append("valid_path", "../val");
+
+          const requestOptions = {
+            method: "PUT",
+            headers: myHeaders,
+            body: urlencoded,
+            redirect: "follow",
+          };
+
+          fetch(
+            `${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`,
+            requestOptions
+          )
+            .then((response) => response.text())
+            .then((result) => console.log(result))
+            .catch((error) => console.error(error));
+
+          // Open Drawer
+          handleToggleDrawerId(selectedItem);
+          toggleDrawer(true)();
+        } else {
+          alert("訓練中，請稍後再試");
+          setIsTraining(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  useEffect(() => {
+    if (isTraining && startTrainButtonRef.current) {
+      startTrainButtonRef.current.innerText = "訓練中，請稍後再試";
+    }
+  }, [isTraining]);
+
+  const handleHelloModalConfirm = () => {
+    handleStartTrainClick();
+    setHelloOpen(false);
   };
 
   useEffect(() => {
@@ -169,57 +400,9 @@ export default function AIModel() {
     setOpenDrawerId(null);
   };
 
-  const handleStartTrainClick = () => {
-    // Send Get request to the endpoint
-    fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-
-        if (data.state === true) {
-          // Start training
-          alert("開始訓練");
-          setIsTraining(true);
-
-          // Start training
-          const myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-
-          const urlencoded = new URLSearchParams();
-          urlencoded.append("weight", "93");
-          urlencoded.append("weight_name", "tpc_test_v1");
-          urlencoded.append("model_id", "1");
-          urlencoded.append("train_path", "../train");
-          urlencoded.append("valid_path", "../val");
-
-          const requestOptions = {
-            method: "PUT",
-            headers: myHeaders,
-            body: urlencoded,
-            redirect: "follow"
-          };
-
-          fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`, requestOptions)
-            .then((response) => response.text())
-            .then((result) => console.log(result))
-            .catch((error) => console.error(error));
-          // END
-
-        } else {
-          alert("訓練中，請稍後再試");
-          setIsTraining(false);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+  const handleButtonClick = (index) => {
+    setActiveButton(index);
   };
-
-  useEffect(() => {
-    if (isTraining) {
-      document.getElementById("startTrain").innerText = "訓練中，請稍後再試";
-    }
-  }, [isTraining]);
 
   return (
     <div
@@ -293,7 +476,7 @@ export default function AIModel() {
                         lineHeight: "80px",
                       }}
                     >
-                      {Number(weight.F_score).toFixed(1)}
+                      {Number(weight.F_score).toFixed(2)}
                     </span>
                   ))}
                 <div
@@ -305,8 +488,6 @@ export default function AIModel() {
                     gap: "10px",
                   }}
                 >
-                  {/* <span>yyyy/mm/dd</span>
-                  <span>21:59:59</span> */}
                 </div>
 
                 <div
@@ -323,12 +504,17 @@ export default function AIModel() {
                     設定
                   </button> */}
                   <SettingModal openModal={open} closeModal={handleClose} />
+                  <HelloModal
+                    openHelloModal={HelloOpen}
+                    closeHelloModal={() => setHelloOpen(false)}
+                    onConfirm={handleHelloModalConfirm}
+                  />
                   <div>
                     <button
-                      onClick={() => handleTrainClick(item)}
+                      onClick={() => handleDeployClick(item)}
                       className="aibutton"
                     >
-                      訓練
+                      佈署
                     </button>
                     <Drawer
                       open={TrainOpen}
@@ -407,11 +593,15 @@ export default function AIModel() {
                               >
                                 <button
                                   id="startTrain"
+                                  ref={startTrainButtonRef}
                                   className="aibutton"
                                   onClick={() => handleStartTrainClick()}
-                                  style={{ marginRight: "10px", width: "100px" }}
+                                  style={{
+                                    marginRight: "10px",
+                                    width: "100px",
+                                  }}
                                 >
-                                  訓練與佈署
+                                  佈署
                                 </button>
                                 {/* <button className="aibutton">佈署</button> */}
                               </div>
@@ -440,7 +630,9 @@ export default function AIModel() {
                                       <button
                                         className="offcanvas-button"
                                         style={{ flex: "1" }}
-                                        onClick={() => handleButtonClick(index)}
+                                        onClick={() =>
+                                          handleButtonClick(index)
+                                        }
                                         hidden={activeButton === index}
                                       >
                                         切換
