@@ -17,6 +17,18 @@ const modelTypeMapping = {
   bucketComponent: "挖斗配件",
 };
 
+const datasetTypeMapping = {
+  "背景模型": "background",
+  "侷限空間配件模型": "confinedSpaceComponent",
+  "侷限空間設備模型": "confinedSpaceDevice",
+  "安全裝束模型": "equipment",
+  "異常災害模型": "fireSmoke",
+  "電線桿配件模型": "poleComponent",
+  "交通設備模型": "trafficDevice",
+  "營建系車輛配件模型": "vehicleComponent",
+  "挖斗配件模型": "bucketComponent"
+};
+
 function SettingModal({ openModal, closeModal }) {
   const ref = useRef();
 
@@ -115,10 +127,11 @@ function SettingModal({ openModal, closeModal }) {
   );
 }
 
-function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
+function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelType }) {
   const ref = useRef();
   const [modelOptions, setModelOptions] = useState([]);
   const [datasetOptions, setDatasetOptions] = useState([]);
+  const [weightName, setWeightName] = useState("tpc_test_v1"); // 初始值設定為 tpc_test_v1
 
   useEffect(() => {
     if (ref.current !== null) {
@@ -142,16 +155,18 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
     )
       .then((response) => response.json())
       .then((result) => {
-        const options = result.data.flatMap((model) =>
-          model.weights.map((weight) => ({
-            modelType: model.model_type,
-            weightName: weight.weight_name,
-          }))
-        );
+        const options = result.data
+          .filter((model) => model.model_type === selectedModelType)
+          .flatMap((model) =>
+            model.weights.map((weight) => ({
+              modelType: model.model_type,
+              weightName: weight.weight_name,
+            }))
+          );
         setModelOptions(options);
       })
       .catch((error) => console.error(error));
-  }, []);
+  }, [selectedModelType]);
 
   useEffect(() => {
     const myHeaders = new Headers();
@@ -170,11 +185,13 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/knowledge`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        const options = Object.values(result).flat();
+        const options = Object.entries(result)
+          .filter(([key]) => datasetTypeMapping[key] === selectedModelType)
+          .flatMap(([, values]) => values);
         setDatasetOptions(options);
       })
       .catch((error) => console.error(error));
-  }, []);
+  }, [selectedModelType]);
 
   const handleOverlayClick = (event) => {
     if (event.target === ref.current) {
@@ -183,7 +200,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
   };
 
   const handleConfirm = () => {
-    onConfirm();
+    onConfirm(weightName); // 將 weightName 傳遞給 onConfirm 函數
     closeHelloModal();
   };
 
@@ -259,7 +276,8 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm }) {
               <label>想儲存的模型名稱</label>
               <input
                 type="text"
-                value="tpc_test_v1"
+                value={weightName}
+                onChange={(e) => setWeightName(e.target.value)} // 當輸入變更時更新 weightName
                 style={{
                   marginLeft: "10px",
                   borderRadius: "5px",
@@ -301,6 +319,7 @@ export default function AIModel() {
   const [isTraining, setIsTraining] = useState(false);
   const [HelloOpen, setHelloOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedModelType, setSelectedModelType] = useState(null);
 
   const startTrainButtonRef = useRef(null);
 
@@ -312,12 +331,18 @@ export default function AIModel() {
     setOpenDrawerId(item.model_id);
   };
 
+  const handleTrainClick = (item) => {
+    handleToggleDrawerId(item);
+    toggleDrawer(true)();
+  };
+
   const handleDeployClick = (item) => {
     setSelectedItem(item);
+    setSelectedModelType(item.model_type);
     setHelloOpen(true);
   };
 
-  const handleStartTrainClick = () => {
+  const handleStartTrainClick = (weightName) => {
     fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
       .then((res) => res.json())
       .then((data) => {
@@ -333,7 +358,7 @@ export default function AIModel() {
 
           const urlencoded = new URLSearchParams();
           urlencoded.append("weight", "93");
-          urlencoded.append("weight_name", "tpc_test_v1");
+          urlencoded.append("weight_name", weightName);
           urlencoded.append("model_id", selectedItem.model_id);
           urlencoded.append("train_path", "../train");
           urlencoded.append("valid_path", "../val");
@@ -372,8 +397,8 @@ export default function AIModel() {
     }
   }, [isTraining]);
 
-  const handleHelloModalConfirm = () => {
-    handleStartTrainClick();
+  const handleHelloModalConfirm = (weightName) => {
+    handleStartTrainClick(weightName);
     setHelloOpen(false);
   };
 
@@ -497,21 +522,22 @@ export default function AIModel() {
                     gap: "20px",
                   }}
                 >
-                  {/* <button
+                  <button
                     className="setbutton"
-                    onClick={() => handleClickOpen(item)}
+                    onClick={() => handleDeployClick(item)}
                   >
-                    設定
-                  </button> */}
+                    訓練
+                  </button>
                   <SettingModal openModal={open} closeModal={handleClose} />
                   <HelloModal
                     openHelloModal={HelloOpen}
                     closeHelloModal={() => setHelloOpen(false)}
                     onConfirm={handleHelloModalConfirm}
+                    selectedModelType={selectedModelType}
                   />
                   <div>
                     <button
-                      onClick={() => handleDeployClick(item)}
+                      onClick={() => handleTrainClick(item)}
                       className="aibutton"
                     >
                       佈署
