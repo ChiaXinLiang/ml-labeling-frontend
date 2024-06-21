@@ -12,6 +12,8 @@ COPY . .
 
 RUN npm run build
 
+RUN chown -R labeling-frontend:labeling-frontend /app
+
 ENV PORT=3001
 
 EXPOSE 3001
