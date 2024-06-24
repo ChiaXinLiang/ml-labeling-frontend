@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import Nav from "./Nav";
+import { getCSRFToken } from './utils'; // 假設你有一個函數可以獲取 CSRF token
 
 const initialItems = [
   {
@@ -40,13 +41,16 @@ export default function Forbidden() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const csrfToken = getCSRFToken();
+        const myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
+        myHeaders.append('X-CSRF-Token', csrfToken);
+
         const url = new URL(`${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/getRadiusConfig`);
 
         const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          headers: myHeaders,
+          redirect: 'follow',
         });
 
         const result = await response.json();
@@ -93,20 +97,25 @@ export default function Forbidden() {
       item.id === id ? { ...item, ...inputs[id] } : item
     );
     setItems(updatedItems);
-
+  
     try {
+      const csrfToken = getCSRFToken();
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
+      myHeaders.append('X-CSRF-Token', csrfToken);
+  
       const url = `${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/setRadius`;
+  
       const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        method: process.env.REACT_APP_FORBIDDEN_API_POST_METHOD,
+        headers: myHeaders,
         body: new URLSearchParams({
           vehicle_id: id.toString(),
           a_radius: inputs[id].a,
           b_radius: inputs[id].b
         })
       });
+  
       const result = await response.json();
       if (result.code === 0) {
         alert("設定成功");
@@ -115,6 +124,7 @@ export default function Forbidden() {
       console.error("Error submitting data:", error);
     }
   };
+  
 
   return (
     <div

@@ -112,7 +112,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
     });
 
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`, {
-      method: "POST",
+      method: process.env.REACT_APP_FORBIDDEN_API_POST_METHOD,
       body: formData,
     })
       .then((res) => res.json())
@@ -122,7 +122,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
         setOpen(false);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        // console.error("Error:", error);
       });
   }
 
@@ -191,7 +191,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
 
   function handleExport() {
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${id}`, {
-      method: "GET",
+      method: process.env.REACT_APP_FORBIDDEN_API_GET_METHOD,
     })
       .then((res) => res.blob())
       .then((blob) => {
@@ -204,7 +204,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
         a.remove();
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       });
   }
 
@@ -360,7 +360,7 @@ function TaskTable({ datas, selectedIds, setSelectedIds }) {
       const url = `${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`;
 
       fetch(url, {
-        method: "POST",
+        method: process.env.REACT_APP_FORBIDDEN_API_POST_METHOD,
         headers: {
           "Content-Type": "application/json",
         },
@@ -374,13 +374,20 @@ function TaskTable({ datas, selectedIds, setSelectedIds }) {
           console.log(JSON.stringify(data));
         })
         .catch((error) => {
-          console.error("Error:", error);
+          // console.error("Error:", error);
         });
     }
 
     const taskId = params.id;
-    const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${taskId}`;
-    window.location.href = url;
+    const url = new URL(`${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data`);
+    url.searchParams.append('task', taskId);
+    
+    const trustedDomain = new URL(process.env.REACT_APP_LABEL_STUDIO_HOST).hostname;
+    if (url.hostname === trustedDomain) {
+      window.location.href = url.toString();
+    } else {
+      console.error('Untrusted redirect URL:', url.toString());
+    }
   };
 
   const handleSelectionChange = (ids) => {
@@ -468,7 +475,6 @@ export default function TaskList({ ProjectData }) {
 
             // Fetch the processor data
             const processorResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`, {
-              method: "GET",
               headers: {
                 'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -560,7 +566,7 @@ export default function TaskList({ ProjectData }) {
       });
 
       const requestOptions = {
-        method: "POST",
+        method: process.env.REACT_APP_FORBIDDEN_API_POST_METHOD,
         headers: myHeaders,
         body: raw,
         redirect: "follow",

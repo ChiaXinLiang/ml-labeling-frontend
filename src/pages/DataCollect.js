@@ -33,7 +33,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
           onDelete(id); // 更新UI
         })
         .catch((error) => {
-          console.error(`Error deleting dataset ${id}:`, error);
+          // console.error(`Error deleting dataset ${id}:`, error);
         });
     });
     closeModal();

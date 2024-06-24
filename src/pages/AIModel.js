@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Drawer from "@mui/material/Drawer";
 import Divider from "@mui/material/Divider";
 import "./AIModel.css";
+import { getCSRFToken } from './utils';
 
 const datasetMapping = {
   "background": {
@@ -146,7 +147,6 @@ function SettingModal({ openModal, closeModal }) {
           </div>
           <button
             type="submit"
-            //onClick={handleSubmit}
             style={{
               height: "30px",
               borderRadius: "10px",
@@ -170,7 +170,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   const ref = useRef();
   const [modelOptions, setModelOptions] = useState([]);
   const [datasetOptions, setDatasetOptions] = useState([]);
-  const [weightName, setWeightName] = useState("tpc_test_v1"); // 初始值設定為 tpc_test_v1
+  const [weightName, setWeightName] = useState("tpc_test_v1");
 
   useEffect(() => {
     if (ref.current !== null) {
@@ -183,8 +183,13 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   }, [openHelloModal]);
 
   useEffect(() => {
+    const csrfToken = getCSRFToken();
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("X-CSRF-Token", csrfToken);
+
     const requestOptions = {
-      method: "GET",
+      headers: myHeaders,
       redirect: "follow",
     };
 
@@ -204,19 +209,20 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
           );
         setModelOptions(options);
       })
-      .catch((error) => console.error(error));
+      .catch((error));
   }, [selectedModelType]);
 
   useEffect(() => {
+    const csrfToken = getCSRFToken();
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append(
       "Authorization",
       `Token ${process.env.REACT_APP_API_TOKEN}`
     );
+    myHeaders.append("X-CSRF-Token", csrfToken);
 
     const requestOptions = {
-      method: "GET",
       headers: myHeaders,
       redirect: "follow",
     };
@@ -227,7 +233,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
         const options = result.results.map((project) => project.title);
         setDatasetOptions(options);
       })
-      .catch((error) => console.error(error));
+      .catch((error));
   }, [selectedModelType]);
 
   const handleOverlayClick = (event) => {
@@ -237,7 +243,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   };
 
   const handleConfirm = () => {
-    onConfirm(weightName); // 將 weightName 傳遞給 onConfirm 函數
+    onConfirm(weightName);
     closeHelloModal();
   };
 
@@ -314,7 +320,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
               <input
                 type="text"
                 value={weightName}
-                onChange={(e) => setWeightName(e.target.value)} // 當輸入變更時更新 weightName
+                onChange={(e) => setWeightName(e.target.value)}
                 style={{
                   marginLeft: "10px",
                   borderRadius: "5px",
@@ -357,7 +363,7 @@ export default function AIModel() {
   const [HelloOpen, setHelloOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedModelType, setSelectedModelType] = useState(null);
-  const [selectedWeight, setSelectedWeight] = useState(null); // 新增狀態來追蹤選擇的 weight
+  const [selectedWeight, setSelectedWeight] = useState(null);
   const [currentVersion, setCurrentVersion] = useState("");
   const [currentPrecision, setCurrentPrecision] = useState("");
   const [currentRecall, setCurrentRecall] = useState("");
@@ -384,24 +390,22 @@ export default function AIModel() {
   };
 
   const handleStartTrainClick = (weightName) => {
+    const csrfToken = getCSRFToken();
     fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
       .then((res) => res.json())
       .then((data) => {
-
         if (data.state === true) {
-          // Start training
           alert("開始訓練");
           setIsTraining(true);
-
           const myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+          myHeaders.append("X-CSRF-Token", csrfToken);
 
           const urlencoded = new URLSearchParams();
           urlencoded.append("base_weight_id", "93");
           urlencoded.append("weight_name", weightName);
           urlencoded.append("model_id", selectedItem.model_id);
 
-          // 根據選擇的模型類型設置對應的 train_path 和 valid_path
           const selectedDataset = datasetMapping[selectedModelType];
           if (selectedDataset) {
             urlencoded.append("train_path", selectedDataset.train_path);
@@ -424,9 +428,8 @@ export default function AIModel() {
           )
             .then((response) => response.text())
             .then((result) => console.log(result))
-            .catch((error) => console.error(error));
+            .catch((error));
 
-          // Open Drawer
           handleToggleDrawerId(selectedItem);
           toggleDrawer(true)();
         } else {
@@ -435,7 +438,7 @@ export default function AIModel() {
         }
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       });
   };
 
@@ -451,15 +454,26 @@ export default function AIModel() {
   };
 
   useEffect(() => {
+    const csrfToken = getCSRFToken();
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("X-CSRF-Token", csrfToken);
+
+    const requestOptions = {
+      headers: myHeaders,
+      redirect: "follow",
+    };
+
     fetch(
-      `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`
+      `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`,
+      requestOptions
     )
       .then((res) => res.json())
       .then((data) => {
         setModelData(data);
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       });
   }, []);
 
@@ -481,16 +495,24 @@ export default function AIModel() {
     setCurrentPrecision(weight.Precision.toFixed(2));
     setCurrentRecall(weight.Recall.toFixed(2));
 
-    // 確保數據更新後重新獲取模型數據
-    fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
+    const csrfToken = getCSRFToken();
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("X-CSRF-Token", csrfToken);
+
+    const requestOptions = {
+      headers: myHeaders,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`, requestOptions)
       .then((res) => res.json())
       .then((data) => {
-        // 更新狀態
         setModelData(data);
-        setSelectedItem(data.data.find(model => model.model_id === item.model_id)); // 更新選中項目
+        setSelectedItem(data.data.find(model => model.model_id === item.model_id));
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       });
   };
 
@@ -610,7 +632,6 @@ export default function AIModel() {
                     <Drawer
                       open={TrainOpen}
                       onClose={toggleDrawer(false)}
-                      //hideBackdrop={true}
                       anchor="right"
                       ModalProps={{
                         BackdropProps: {
@@ -690,7 +711,6 @@ export default function AIModel() {
                                 >
                                   佈署
                                 </button>
-                                {/* <button className="aibutton">佈署</button> */}
                               </div>
 
                               <p className="offcanvas-p">安全帽版本模型列表</p>

@@ -337,7 +337,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
           onDelete(id); // 更新UI
         })
         .catch((error) => {
-          console.error(`Error deleting project ${id}:`, error);
+          // console.error(`Error deleting project ${id}:`, error);
         });
     });
     closeModal();
@@ -489,7 +489,7 @@ export default function AddProject({ ProjectData }) {
           }
         })
         .catch((error) => {
-          console.error("Error fetching decoded JWT data:", error);
+          // console.error("Error fetching decoded JWT data:", error);
         });
     }
   }, []);
