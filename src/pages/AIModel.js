@@ -5,6 +5,45 @@ import Drawer from "@mui/material/Drawer";
 import Divider from "@mui/material/Divider";
 import "./AIModel.css";
 
+const datasetMapping = {
+  "background": {
+    "train_path": "/code/datasets/background/images/train",
+    "val_path": "/code/datasets/background/images/val"
+  },
+  "confinedSpaceComponent": {
+    "train_path": "/code/datasets/confinedSpaceComponent/images/train",
+    "val_path": "/code/datasets/confinedSpaceComponent/images/val"
+  },
+  "confinedSpaceDevice": {
+    "train_path": "/code/datasets/confinedSpaceDevice/images/train",
+    "val_path": "/code/datasets/confinedSpaceDevice/images/val"
+  },
+  "equipment": {
+    "train_path": "/code/datasets/equipment/images/train",
+    "val_path": "/code/datasets/equipment/images/val"
+  },
+  "fireSmoke": {
+    "train_path": "/code/datasets/fireSmoke/images/train",
+    "val_path": "/code/datasets/fireSmoke/images/val"
+  },
+  "poleComponent": {
+    "train_path": "/code/datasets/poleComponent/images/train",
+    "val_path": "/code/datasets/poleComponent/images/val"
+  },
+  "trafficDevice": {
+    "train_path": "/code/datasets/trafficDevice/images/train",
+    "val_path": "/code/datasets/trafficDevice/images/val"
+  },
+  "vehicleComponent": {
+    "train_path": "/code/datasets/vehicleComponent/images/train",
+    "val_path": "/code/datasets/vehicleComponent/images/val"
+  },
+  "bucketComponent": {
+    "train_path": "/code/datasets/bucketCompoent/images/train",
+    "val_path": "/code/datasets/bucketCompoent/images/val"
+  }
+};
+
 const modelTypeMapping = {
   background: "背景",
   confinedSpaceComponent: "侷限空間配件",
@@ -182,12 +221,10 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
       redirect: "follow",
     };
 
-    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/knowledge`, requestOptions)
+    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        const options = Object.entries(result)
-          .filter(([key]) => datasetTypeMapping[key] === selectedModelType)
-          .flatMap(([, values]) => values);
+        const options = result.results.map((project) => project.title);
         setDatasetOptions(options);
       })
       .catch((error) => console.error(error));
@@ -320,6 +357,10 @@ export default function AIModel() {
   const [HelloOpen, setHelloOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedModelType, setSelectedModelType] = useState(null);
+  const [selectedWeight, setSelectedWeight] = useState(null); // 新增狀態來追蹤選擇的 weight
+  const [currentVersion, setCurrentVersion] = useState("");
+  const [currentPrecision, setCurrentPrecision] = useState("");
+  const [currentRecall, setCurrentRecall] = useState("");
 
   const startTrainButtonRef = useRef(null);
 
@@ -346,7 +387,6 @@ export default function AIModel() {
     fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
 
         if (data.state === true) {
           // Start training
@@ -357,11 +397,19 @@ export default function AIModel() {
           myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
           const urlencoded = new URLSearchParams();
-          urlencoded.append("weight", "93");
+          urlencoded.append("base_weight_id", "93");
           urlencoded.append("weight_name", weightName);
           urlencoded.append("model_id", selectedItem.model_id);
-          urlencoded.append("train_path", "../train");
-          urlencoded.append("valid_path", "../val");
+
+          // 根據選擇的模型類型設置對應的 train_path 和 valid_path
+          const selectedDataset = datasetMapping[selectedModelType];
+          if (selectedDataset) {
+            urlencoded.append("train_path", selectedDataset.train_path);
+            urlencoded.append("valid_path", selectedDataset.val_path);
+          } else {
+            urlencoded.append("train_path", "");
+            urlencoded.append("valid_path", "");
+          }
 
           const requestOptions = {
             method: "PUT",
@@ -425,8 +473,25 @@ export default function AIModel() {
     setOpenDrawerId(null);
   };
 
-  const handleButtonClick = (index) => {
-    setActiveButton(index);
+  const handleButtonClick = (item, weight) => {
+    setSelectedWeight(weight);
+    setActiveButton(weight.weight_id);
+
+    setCurrentVersion(weight.weight_name);
+    setCurrentPrecision(weight.Precision.toFixed(2));
+    setCurrentRecall(weight.Recall.toFixed(2));
+
+    // 確保數據更新後重新獲取模型數據
+    fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
+      .then((res) => res.json())
+      .then((data) => {
+        // 更新狀態
+        setModelData(data);
+        setSelectedItem(data.data.find(model => model.model_id === item.model_id)); // 更新選中項目
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   };
 
   return (
@@ -582,19 +647,15 @@ export default function AIModel() {
                                     <React.Fragment key={weight.weight_name}>
                                       <div className="offcanvas-text">
                                         <span>目前使用版本</span>
-                                        <span>{weight.weight_name}</span>
+                                        <span id="currentVersion">{currentVersion || weight.weight_name}</span>
                                       </div>
                                       <div className="offcanvas-text">
                                         <span>精確率</span>
-                                        <span>
-                                          {Number(weight.Precision).toFixed(2)}
-                                        </span>
+                                        <span id="currentPrecision">{currentPrecision || Number(weight.Precision).toFixed(2)}</span>
                                       </div>
                                       <div className="offcanvas-text">
                                         <span>召回率</span>
-                                        <span>
-                                          {Number(weight.Recall).toFixed(2)}
-                                        </span>
+                                        <span id="currentRecall">{currentRecall || Number(weight.Recall).toFixed(2)}</span>
                                       </div>
                                     </React.Fragment>
                                   ))}
@@ -657,9 +718,9 @@ export default function AIModel() {
                                         className="offcanvas-button"
                                         style={{ flex: "1" }}
                                         onClick={() =>
-                                          handleButtonClick(index)
+                                          handleButtonClick(item, weight)
                                         }
-                                        hidden={activeButton === index}
+                                        hidden={activeButton === weight.weight_id}
                                       >
                                         切換
                                       </button>
