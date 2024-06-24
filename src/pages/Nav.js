@@ -33,7 +33,7 @@ function SideMenu() {
           elevation: 0,
           sx: {
             overflow: "visible",
-            width: 130,
+            width: 175,
             backgroundColor: "white",
             color: "rgba(75, 84, 38, 0.7)",
             borderRadius: 4,
@@ -101,7 +101,17 @@ function SideMenu() {
           />
           禁區設定
         </MenuItem>
+        <MenuItem component={Link} to="https://118.163.118.14/taipower-safetyai/">
+          {" "}
+          <img
+            src="/Logo.png"
+            alt="map"
+            style={{ width: "25px", marginRight: "5px" }}
+          />
+          返回工安平台
+        </MenuItem>
       </Menu>
+
       <div className={`backdrop ${open ? "open" : ""}`} onClick={handleClose} />
     </>
   );

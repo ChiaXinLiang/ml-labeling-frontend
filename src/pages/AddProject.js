@@ -85,12 +85,13 @@ function Step0({ onUpdateTitle, onUpdateDescription }) {
 
 function Modal({ openModal, closeModal }) {
   const ref = useRef();
-  const steps = ["專案名稱", "匯入資料", "設定標註"];
+  const steps = ["專案名稱"]; //, "匯入資料", "設定標註"];
   const [activeStep, setActiveStep] = useState(0);
   const [Title, setTitle] = useState("");
   const [Description, setDescription] = useState("");
   const [Knowledge, setKnowledge] = useState(null);
   const [files, setFiles] = useState([]);
+  const navigate = useNavigate(); // FIXED
 
   // const [file, setFile] = useState(null);
   //console.log(file);
@@ -154,19 +155,20 @@ function Modal({ openModal, closeModal }) {
             console.log("Third API Response:", response2.data);
           } catch (error) {
             console.error("Error in second request:", error);
-            alert("Error create project. Please try again.");
+            // alert("Error create project. Please try again.");
           }
         };
 
         sendSecondRequest(projectId);
       } catch (error) {
         console.error("Error in first request:", error);
-        alert("Error create project. Please try again.");
+        // alert("Error create project. Please try again.");
       }
     };
 
     sendFirstRequest();
     closeModal();
+    navigate("/taipower-autolabel-beta"); // FIXED
   };
 
   const handleTitleChange = (Title) => {
