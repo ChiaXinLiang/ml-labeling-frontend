@@ -56,18 +56,6 @@ const modelTypeMapping = {
   bucketComponent: "挖斗配件",
 };
 
-const datasetTypeMapping = {
-  "背景模型": "background",
-  "侷限空間配件模型": "confinedSpaceComponent",
-  "侷限空間設備模型": "confinedSpaceDevice",
-  "安全裝束模型": "equipment",
-  "異常災害模型": "fireSmoke",
-  "電線桿配件模型": "poleComponent",
-  "交通設備模型": "trafficDevice",
-  "營建系車輛配件模型": "vehicleComponent",
-  "挖斗配件模型": "bucketComponent"
-};
-
 function SettingModal({ openModal, closeModal }) {
   const ref = useRef();
 
@@ -170,7 +158,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   const ref = useRef();
   const [modelOptions, setModelOptions] = useState([]);
   const [datasetOptions, setDatasetOptions] = useState([]);
-  const [weightName, setWeightName] = useState("tpc_test_v1"); // 初始值設定為 tpc_test_v1
+  const [weightName, setWeightName] = useState("tpc_test_v1");
 
   useEffect(() => {
     if (ref.current !== null) {
@@ -237,7 +225,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   };
 
   const handleConfirm = () => {
-    onConfirm(weightName); // 將 weightName 傳遞給 onConfirm 函數
+    onConfirm(weightName);
     closeHelloModal();
   };
 
@@ -314,7 +302,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
               <input
                 type="text"
                 value={weightName}
-                onChange={(e) => setWeightName(e.target.value)} // 當輸入變更時更新 weightName
+                onChange={(e) => setWeightName(e.target.value)}
                 style={{
                   marginLeft: "10px",
                   borderRadius: "5px",
@@ -357,7 +345,7 @@ export default function AIModel() {
   const [HelloOpen, setHelloOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedModelType, setSelectedModelType] = useState(null);
-  const [selectedWeight, setSelectedWeight] = useState(null); // 新增狀態來追蹤選擇的 weight
+  const [selectedWeight, setSelectedWeight] = useState(null);
   const [currentVersion, setCurrentVersion] = useState("");
   const [currentPrecision, setCurrentPrecision] = useState("");
   const [currentRecall, setCurrentRecall] = useState("");
@@ -387,9 +375,7 @@ export default function AIModel() {
     fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
       .then((res) => res.json())
       .then((data) => {
-
         if (data.state === true) {
-          // Start training
           alert("開始訓練");
           setIsTraining(true);
 
@@ -397,11 +383,11 @@ export default function AIModel() {
           myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
           const urlencoded = new URLSearchParams();
-          urlencoded.append("base_weight_id", "93");
+          const firstWeightId = ModelData.data.find(model => model.model_id === selectedItem.model_id)?.weights[0]?.weight_id;
+          urlencoded.append("base_weight_id", firstWeightId || "286");
           urlencoded.append("weight_name", weightName);
           urlencoded.append("model_id", selectedItem.model_id);
 
-          // 根據選擇的模型類型設置對應的 train_path 和 valid_path
           const selectedDataset = datasetMapping[selectedModelType];
           if (selectedDataset) {
             urlencoded.append("train_path", selectedDataset.train_path);
@@ -418,15 +404,11 @@ export default function AIModel() {
             redirect: "follow",
           };
 
-          fetch(
-            `${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`,
-            requestOptions
-          )
+          fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`, requestOptions)
             .then((response) => response.text())
             .then((result) => console.log(result))
             .catch((error) => console.error(error));
 
-          // Open Drawer
           handleToggleDrawerId(selectedItem);
           toggleDrawer(true)();
         } else {
@@ -437,6 +419,27 @@ export default function AIModel() {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+  };
+
+  const handleStartDeployClick = (modelId, weightId) => {
+    const requestOptions = {
+      method: "PUT",
+      body: "",
+      redirect: "follow"
+    };
+    alert("正在佈署");
+    const url = `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/depolyModel?model_id=${modelId}&weight_id=${weightId}`
+    fetch(url, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error("Error: ", error));
   };
 
   useEffect(() => {
@@ -451,9 +454,7 @@ export default function AIModel() {
   };
 
   useEffect(() => {
-    fetch(
-      `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`
-    )
+    fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
       .then((res) => res.json())
       .then((data) => {
         setModelData(data);
@@ -481,13 +482,11 @@ export default function AIModel() {
     setCurrentPrecision(weight.Precision.toFixed(2));
     setCurrentRecall(weight.Recall.toFixed(2));
 
-    // 確保數據更新後重新獲取模型數據
     fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
       .then((res) => res.json())
       .then((data) => {
-        // 更新狀態
         setModelData(data);
-        setSelectedItem(data.data.find(model => model.model_id === item.model_id)); // 更新選中項目
+        setSelectedItem(data.data.find(model => model.model_id === item.model_id));
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -682,7 +681,7 @@ export default function AIModel() {
                                   id="startTrain"
                                   ref={startTrainButtonRef}
                                   className="aibutton"
-                                  onClick={() => handleStartTrainClick()}
+                                  onClick={() => handleStartDeployClick(item.model_id, selectedWeight.weight_id)}
                                   style={{
                                     marginRight: "10px",
                                     width: "100px",
