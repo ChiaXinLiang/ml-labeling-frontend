@@ -28,7 +28,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route
-            path="/taipower-autolabel-beta"
+            path="/taipower-autolabel"
             element={<AddProject ProjectData={ProjectData} />}
           />
           <Route path="/project" element={<TaskList />} />

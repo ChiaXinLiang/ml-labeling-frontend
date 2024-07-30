@@ -57,7 +57,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
               alignItems: "center",
             }}
           >
-            <img src="warn.png" alt="warn" width={30}></img>
+            <img src={`${process.env.PUBLIC_URL}/warn.png`} alt="warn" width={30}></img>
             確定刪除所選之資料集嗎?
           </p>
           <div

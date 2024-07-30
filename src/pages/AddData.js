@@ -43,7 +43,7 @@ export default function AddData() {
             />
           ) : (
             <img
-              src="/upload.png"
+              src={`${process.env.PUBLIC_URL}/upload.png`}
               alt="upload"
               width="50"
               height="50"

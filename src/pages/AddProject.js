@@ -168,7 +168,7 @@ function Modal({ openModal, closeModal }) {
 
     sendFirstRequest();
     closeModal();
-    navigate("/taipower-autolabel-beta"); // FIXED
+    navigate("/taipower-autolabel"); // FIXED
   };
 
   const handleTitleChange = (Title) => {
@@ -361,7 +361,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
               alignItems: "center",
             }}
           >
-            <img src="warn.png" alt="warn" width={30} />
+            <img src={`${process.env.PUBLIC_URL}/warn.png`} alt="warn" width={30} />
             確定刪除所選之專案嗎?
           </p>
           <div

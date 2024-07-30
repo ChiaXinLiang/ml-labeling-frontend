@@ -21,7 +21,7 @@ function SideMenu() {
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
       >
-        <img src="/menu.png" alt="menu" width="30" />
+        <img src={`${process.env.PUBLIC_URL}/menu.png`} alt="menu" width="30" />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -65,10 +65,10 @@ function SideMenu() {
         <MenuItem
           onClick={handleClose}
           component={Link}
-          to="/taipower-autolabel-beta"
+          to="/taipower-autolabel"
         >
           <img
-            src="/map.png"
+            src={`${process.env.PUBLIC_URL}/map.png`}
             alt="map"
             style={{ width: "25px", marginRight: "5px" }}
           />
@@ -77,8 +77,8 @@ function SideMenu() {
         <MenuItem component={Link} to="/datacollect">
           {" "}
           <img
-            src="/score.png"
-            alt="map"
+            src={`${process.env.PUBLIC_URL}/score.png`}
+            alt="score"
             style={{ width: "25px", marginRight: "5px" }}
           />
           資料集
@@ -86,8 +86,8 @@ function SideMenu() {
         <MenuItem component={Link} to="/ai">
           {" "}
           <img
-            src="/ai.png"
-            alt="map"
+            src={`${process.env.PUBLIC_URL}/ai.png`}
+            alt="ai"
             style={{ width: "25px", marginRight: "5px" }}
           />
           AI 模型
@@ -95,8 +95,8 @@ function SideMenu() {
         <MenuItem component={Link} to="/forbidden">
           {" "}
           <img
-            src="/prohibit.png"
-            alt="map"
+            src={`${process.env.PUBLIC_URL}/prohibit.png`}
+            alt="prohibit"
             style={{ width: "25px", marginRight: "5px" }}
           />
           禁區設定
@@ -104,8 +104,8 @@ function SideMenu() {
         <MenuItem component={Link} to="https://118.163.118.14/taipower-safetyai/">
           {" "}
           <img
-            src="/Logo.png"
-            alt="map"
+            src={`${process.env.PUBLIC_URL}/Logo.png`}
+            alt="logo"
             style={{ width: "25px", marginRight: "5px" }}
           />
           返回工安平台
@@ -200,7 +200,7 @@ export default function Nav({ projectDataById }) {
   const isProjectPage = location.pathname.startsWith("/project/");
   let linkText;
   switch (location.pathname) {
-    case "/taipower-autolabel-beta":
+    case "/taipower-autolabel":
       linkText = "專案";
       break;
     case "/datacollect":
@@ -227,7 +227,7 @@ export default function Nav({ projectDataById }) {
         marginLeft: "20px",
       }}
     >
-      <img src="/Logo.png" alt="logo" width="150" />
+      <img src={`${process.env.PUBLIC_URL}/Logo.png`} alt="logo" width="150" />
       {/* <IconButton>
         <img src="/menu.png" alt="menu" width="30" />
       </IconButton> */}
@@ -242,7 +242,7 @@ export default function Nav({ projectDataById }) {
               onMouseLeave={() => setIsRoot(false)}
             >
               <Link
-                to={"/taipower-autolabel-beta"}
+                to={"/taipower-autolabel"}
                 style={{ color: "inherit", textDecoration: "none" }}
               >
                 {linkText}
