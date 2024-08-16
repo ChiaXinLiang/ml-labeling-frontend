@@ -84,6 +84,7 @@ export default function Step1({ onFileChange, Title, Description, Knowledge, clo
   const HandleSubmit = () => {
     const sendFirstRequest = async () => {
       try {
+        console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
         const response = await axios.post(
           `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
           {
@@ -103,6 +104,7 @@ export default function Step1({ onFileChange, Title, Description, Knowledge, clo
 
         const sendSecondRequest = async (id) => {
           try {
+            console.log(`${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`);
             const response = await axios.post(
               `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`,
               {
@@ -122,6 +124,7 @@ export default function Step1({ onFileChange, Title, Description, Knowledge, clo
               formData.append("files", file);
             });
 
+            console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`);
             const response2 = await axios.post(
               `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
               formData,

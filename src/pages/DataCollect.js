@@ -16,6 +16,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
 
   const handleDelete = () => {
     selectedIds.forEach((id) => {
+      console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`);
       fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`, {
         method: "DELETE",
         headers: {

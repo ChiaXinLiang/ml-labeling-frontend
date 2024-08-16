@@ -99,6 +99,7 @@ function Modal({ openModal, closeModal }) {
   const HandleSubmit = () => {
     const sendFirstRequest = async () => {
       try {
+        console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
         const response = await axios.post(
           `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
           {
@@ -142,6 +143,7 @@ function Modal({ openModal, closeModal }) {
 
             // formData.append("files", file);
 
+            console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`);
             const response2 = await axios.post(
               `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
               formData,
@@ -320,6 +322,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
 
   const handleDelete = () => {
     selectedIds.forEach((id) => {
+      console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`);
       fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}`, {
         method: "DELETE",
         headers: {
@@ -459,6 +462,7 @@ export default function AddProject({ ProjectData }) {
     const jwtToken = urlParams.get("token");
 
     if (jwtToken) {
+      console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/jwt?token=${jwtToken}`);
       fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/jwt?token=${jwtToken}`)
         .then((response) => {
           if (!response.ok) {

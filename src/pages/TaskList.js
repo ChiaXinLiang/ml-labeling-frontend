@@ -111,6 +111,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
       formData.append("files", file);
     });
 
+    console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`);
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`, {
       method: "POST",
       body: formData,
@@ -190,6 +191,7 @@ function ButtonGroup({ id, selectedIds, handleDelete, handleVerify }) {
   }
 
   function handleExport() {
+    console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${id}`);
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${id}`, {
       method: "GET",
     })
@@ -358,6 +360,7 @@ function TaskTable({ datas, selectedIds, setSelectedIds }) {
     if (profile) {
       // Set processor to API server
       const url = `${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`;
+      console.log(url);
 
       fetch(url, {
         method: "POST",
@@ -380,6 +383,7 @@ function TaskTable({ datas, selectedIds, setSelectedIds }) {
 
     const taskId = params.id;
     const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${taskId}`;
+    console.log(url);
     window.location.href = url;
   };
 
@@ -442,7 +446,8 @@ export default function TaskList({ ProjectData }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks/?project=${id}`, {
+        console.log(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${id}`);
+        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${id}`, {
           headers: {
             'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
             'Content-Type': 'application/json'
@@ -456,6 +461,7 @@ export default function TaskList({ ProjectData }) {
         if (Array.isArray(data.tasks)) {
           const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
             // Fetch the image
+            console.log(`${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`);
             const imageResponse = await fetch(`${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`, {
               headers: {
                 'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
@@ -467,6 +473,7 @@ export default function TaskList({ ProjectData }) {
             const imageUrl = URL.createObjectURL(imageBlob);
 
             // Fetch the processor data
+            console.log(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`);
             const processorResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`, {
               method: "GET",
               headers: {
@@ -512,6 +519,7 @@ export default function TaskList({ ProjectData }) {
     const idsString = JSON.stringify(selectedIds);
     try {
       const url = new URL(`${process.env.REACT_APP_LAYER2_ENDPOINT}/tasks/delete/`);
+      console.log(url);
       url.searchParams.append('ids', idsString);
 
       const response = await fetch(url.href, {
@@ -567,6 +575,7 @@ export default function TaskList({ ProjectData }) {
       };
 
       try {
+        console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`);
         const response = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`, requestOptions);
         const result = await response.text();
         console.log(result);

@@ -12,6 +12,7 @@ function App() {
   const [ProjectData, setProjectData] = React.useState("");
 
   React.useEffect(() => {
+    console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`)
       .then((res) => res.json())
       .then((data) => {

@@ -41,6 +41,7 @@ export default function Forbidden() {
     const fetchData = async () => {
       try {
         const url = new URL(`${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/getRadiusConfig`);
+        console.log(url);
 
         const response = await fetch(url, {
           method: 'GET',
@@ -96,6 +97,7 @@ export default function Forbidden() {
 
     try {
       const url = `${process.env.REACT_APP_FORBIDDEN_API_ENDPOINT}/settingManager/setRadius`;
+      console.log(url);
       const response = await fetch(url, {
         method: 'POST',
         headers: {

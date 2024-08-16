@@ -176,6 +176,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
       redirect: "follow",
     };
 
+    console.log(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`);
     fetch(
       `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`,
       requestOptions
@@ -198,6 +199,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
   useEffect(() => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
+    console.log(`${process.env.REACT_APP_API_TOKEN}`);
     myHeaders.append(
       "Authorization",
       `Token ${process.env.REACT_APP_API_TOKEN}`
@@ -209,6 +211,7 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
       redirect: "follow",
     };
 
+    console.log(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
     fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
@@ -372,6 +375,7 @@ export default function AIModel() {
   };
 
   const handleStartTrainClick = (weightName) => {
+    console.log(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`);
     fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingStatus`)
       .then((res) => res.json())
       .then((data) => {
@@ -404,6 +408,7 @@ export default function AIModel() {
             redirect: "follow",
           };
 
+          console.log(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`);
           fetch(`${process.env.REACT_APP_ENDPOINT_TRAINER}/train/trainingConfig`, requestOptions)
             .then((response) => response.text())
             .then((result) => console.log(result))
@@ -429,6 +434,7 @@ export default function AIModel() {
     };
     alert("正在佈署");
     const url = `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/depolyModel?model_id=${modelId}&weight_id=${weightId}`
+    console.log(url);
     fetch(url, requestOptions)
       .then((response) => {
         if (!response.ok) {
@@ -454,6 +460,7 @@ export default function AIModel() {
   };
 
   useEffect(() => {
+    console.log(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`);
     fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
       .then((res) => res.json())
       .then((data) => {
@@ -482,6 +489,7 @@ export default function AIModel() {
     setCurrentPrecision(weight.Precision.toFixed(2));
     setCurrentRecall(weight.Recall.toFixed(2));
 
+    console.log(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`);
     fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
       .then((res) => res.json())
       .then((data) => {

@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - PORT=3001
+  jtbtech-labeling-api:
+    image: yillkid/jtbtech-labeling-api:1.0.0
+    container_name: jtbtech-labeling-api
     ports:
-      - "3001:3001"
-    command: ["sh", "-c", "PORT=3001 npm run start"]
+      - "8080:8080"
+
+  jtbtech-ml-labeling-frontend:
+    image: yillkid/jtbtech-ml-labeling-frontend:1.0.0
+    container_name: jtbtech-ml-labeling-frontend
+    ports:
+      - "3000:3000"
