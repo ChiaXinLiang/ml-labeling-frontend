@@ -442,13 +442,14 @@ export default function TaskList({ ProjectData }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log(`${process.env.REACT_APP_API_ENDPOINT}`);
         const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks/?project=${id}`, {
           headers: {
             'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
             'Content-Type': 'application/json'
           }
         });
-
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

@@ -83,7 +83,7 @@ function Step0({ onUpdateTitle, onUpdateDescription }) {
   );
 }
 
-function Modal({ openModal, closeModal }) {
+function Modal({ openModal, closeModal, onSubmitSuccess }) {
   const ref = useRef();
   const steps = ["專案名稱"]; //, "匯入資料", "設定標註"];
   const [activeStep, setActiveStep] = useState(0);
@@ -91,84 +91,51 @@ function Modal({ openModal, closeModal }) {
   const [Description, setDescription] = useState("");
   const [Knowledge, setKnowledge] = useState(null);
   const [files, setFiles] = useState([]);
-  const navigate = useNavigate(); // FIXED
+  const navigate = useNavigate();
 
-  // const [file, setFile] = useState(null);
-  //console.log(file);
-
-  const HandleSubmit = () => {
-    const sendFirstRequest = async () => {
-      try {
-        const response = await axios.post(
-          `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
-          {
-            title: Title,
-            description: Description,
+  const HandleSubmit = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
+        {
+          title: Title,
+          description: Description,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        }
+      );
 
-        const projectId = response.data.id;
+      const projectId = response.data.id;
+      console.log(projectId)
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      console.log(formData)
 
-        console.log("Project ID:", projectId);
+      await axios.post(
+        `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${projectId}/import`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            // "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`
+          },
+        }
+      );
 
-        const sendSecondRequest = async (id) => {
-          try {
-            // FIXME: 空知識本體會造成底下的 API 無法運作
-            /* const response = await axios.post(
-              `${process.env.REACT_APP_API_ENDPOINT}/projects/${id}/knowledge/add`,
-              {
-                knowledge: Knowledge,
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-
-            console.log("Second API Response:", response.data); */
-
-            const formData = new FormData();
-
-            files.forEach((file) => {
-              // console.log("File:", file);
-              formData.append("files", file);
-            });
-
-            // formData.append("files", file);
-
-            const response2 = await axios.post(
-              `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
-              formData,
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              }
-            );
-
-            console.log("Third API Response:", response2.data);
-          } catch (error) {
-            console.error("Error in second request:", error);
-            // alert("Error create project. Please try again.");
-          }
-        };
-
-        sendSecondRequest(projectId);
-      } catch (error) {
-        console.error("Error in first request:", error);
-        // alert("Error create project. Please try again.");
+      closeModal();
+      if (onSubmitSuccess) {
+        console.log("Calling onSubmitSuccess");
+        onSubmitSuccess(); // Call the passed down onSubmitSuccess prop
       }
-    };
-
-    sendFirstRequest();
-    closeModal();
-    navigate("/taipower-autolabel"); // FIXED
+      navigate("/taipower-autolabel");
+    } catch (error) {
+      console.error("Error submitting:", error);
+    }
   };
 
   const handleTitleChange = (Title) => {
@@ -410,7 +377,7 @@ function DeleteModal({ openModal, closeModal, selectedIds, onDelete }) {
   );
 }
 
-export default function AddProject({ ProjectData }) {
+export default function AddProject({ ProjectData, onSubmitSuccess }) {
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [datas, setData] = useState([]);
@@ -541,7 +508,11 @@ export default function AddProject({ ProjectData }) {
           >
             新增專案
           </button>
-          <Modal openModal={open} closeModal={handleClose} />
+          <Modal 
+            openModal={open} 
+            closeModal={handleClose} 
+            onSubmitSuccess={onSubmitSuccess} // Pass through the prop from App.js
+          />
           <button
             style={{
               height: "30px",
