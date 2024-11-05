@@ -59,22 +59,21 @@ export const taskListColumns = [
     field: "file",
     headerName: "照片",
     sortable: false,
-    renderCell: (params) =>
-      params.value ? (
+    renderCell: (params) => {
+      return params.value ? (
         <img
           src={params.value.src}
           alt={params.value.alt}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
             maxHeight: "100%",
             maxWidth: "100%",
             objectFit: "contain",
             borderRadius: "3px",
+            cursor: "pointer"
           }}
         />
-      ) : null,
+      ) : null;
+    },
     width: 130,
     headerAlign: "center",
   },

@@ -14,15 +14,13 @@ function UploadImg({ onFilesChange, shouldReset }) {
         preview: URL.createObjectURL(file)
       }));
       setPreviews(prev => [...prev, ...newFiles]);
-      setFiles(prev => [...prev, ...acceptedFiles]);
+      setFiles(prev => {
+        const updatedFiles = [...prev, ...acceptedFiles];
+        onFilesChange(updatedFiles); // Call onFilesChange here instead of in useEffect
+        return updatedFiles;
+      });
     }
-  }, []);
-
-  useEffect(() => {
-    if (files.length > 0) {
-      onFilesChange(files);
-    }
-  }, [files, onFilesChange]);
+  }, [onFilesChange]);
 
   // Reset state when shouldReset changes
   useEffect(() => {
@@ -123,6 +121,10 @@ export default function ImportModal({ openModal, closeModal, onImport, projectId
   const [files, setFiles] = useState([]);
   const [shouldResetUpload, setShouldResetUpload] = useState(false);
 
+  const handleFilesChange = useCallback((newFiles) => {
+    setFiles(newFiles);
+  }, []);
+
   const handleImport = async () => {
     if (files.length === 0) {
       alert("Please select files to import");
@@ -184,7 +186,7 @@ export default function ImportModal({ openModal, closeModal, onImport, projectId
       cancelText="取消"
     >
       <UploadImg 
-        onFilesChange={setFiles} 
+        onFilesChange={handleFilesChange} 
         shouldReset={shouldResetUpload}
       />
     </BaseModal>
