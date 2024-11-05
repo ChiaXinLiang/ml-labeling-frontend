@@ -13,14 +13,14 @@ export default function TaskList({ ProjectData }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { id } = useParams();
+  const { id: projectId } = useParams();
 
-  console.log('Current project ID:', id);
+  console.log('Current project ID:', projectId);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${projectId}`, {
         headers: {
           'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
           'Content-Type': 'application/json'
@@ -56,6 +56,7 @@ export default function TaskList({ ProjectData }) {
           const processorData = await processorResponse.json();
           return {
             id: item.id,
+            projectId: projectId,
             Complete: item.is_labeled ? "是" : "否",
             "Total annotations": item.total_annotations,
             "Canceled annotations": item.cancelled_annotations,
@@ -65,7 +66,7 @@ export default function TaskList({ ProjectData }) {
             file: {
               src: imageUrl,
               alt: "Image",
-            },
+            }
           };
         }));
 
@@ -87,39 +88,42 @@ export default function TaskList({ ProjectData }) {
 
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [projectId]);
 
-  const handleRowClick = async (params) => {
+  const handleRowClick = (params) => {
+    // Get profile in local storage
+    console.log(params);
     const profile = JSON.parse(localStorage.getItem("profile"));
     if (profile) {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`
-          },
-          body: JSON.stringify({
-            task_id: params.row.id.toString(),
-            processor: {"annotator":profile.name, "verifier":""}
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to update processor');
-        }
-        
-        const data = await response.json();
-        console.log(JSON.stringify(data));
+      // Set processor to API server
+      const url = `${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`;
 
-        const taskId = params.id;
-        const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${id}/data?task=${taskId}`;
-        window.location.href = url;
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Error updating processor. Please try again.");
-      }
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          task_id: params.row.id.toString(),
+          processor: {"annotator":profile.name, "verifier":""}
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(JSON.stringify(data));
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     }
+
+    const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${params.id}`;
+    window.location.href = url;
+  };
+
+  const handleSelectionChange = (newSelection) => {
+    console.log('Selection changed:', newSelection);
+    setSelectedIds(newSelection);
   };
 
   const handleDelete = async () => {
@@ -224,7 +228,7 @@ export default function TaskList({ ProjectData }) {
   const handleExport = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/export-project/${projectId}`, {
         method: "GET",
         headers: {
           'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`
@@ -239,7 +243,7 @@ export default function TaskList({ ProjectData }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `yolo_export_${id}.zip`;
+      a.download = `yolo_export_${projectId}.zip`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -252,14 +256,9 @@ export default function TaskList({ ProjectData }) {
     }
   };
 
-  const handleSelectionChange = (newSelection) => {
-    console.log('Selection changed:', newSelection);
-    setSelectedIds(newSelection);
-  };
-
   let projectDataById;
   if (Array.isArray(projectDatas)) {
-    projectDataById = projectDatas.find((project) => project.id === Number(id));
+    projectDataById = projectDatas.find((project) => project.id === Number(projectId));
   }
 
   return (
@@ -274,7 +273,7 @@ export default function TaskList({ ProjectData }) {
       <ImportModal
         openModal={importModalOpen}
         closeModal={() => setImportModalOpen(false)}
-        projectId={id}
+        projectId={projectId}
         onSuccess={() => {
           fetchData();
         }}

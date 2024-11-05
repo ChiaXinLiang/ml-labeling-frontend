@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 export default function DataTable({
   rows,
   columns,
-  onRowClick,
+  onCellClick,
   selectedIds,
   onSelectionChange,
   rowHeight = 80,
@@ -12,6 +12,7 @@ export default function DataTable({
   checkboxSelection = true,
   disableColumnMenu = true,
   disableColumnSelector = true,
+  onRowClick,
   ...props
 }) {
   return (
@@ -22,6 +23,7 @@ export default function DataTable({
         rowHeight={rowHeight}
         disableColumnMenu={disableColumnMenu}
         disableColumnSelector={disableColumnSelector}
+        onCellClick={onCellClick}
         onRowClick={onRowClick}
         checkboxSelection={checkboxSelection}
         rowSelectionModel={selectedIds}
