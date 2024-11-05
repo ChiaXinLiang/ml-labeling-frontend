@@ -11,16 +11,19 @@ import "./App.css";
 function App() {
   const [ProjectData, setProjectData] = React.useState("");
 
+  const fetchProjectData = async () => {
+    try {
+      console.log("Fetching project data");
+      const res = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
+      const data = await res.json();
+      setProjectData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   React.useEffect(() => {
-    fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`)
-      .then((res) => res.json())
-      .then((data) => {
-        //console.log(data);
-        setProjectData(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    fetchProjectData();
   }, []);
 
   return (
@@ -29,7 +32,7 @@ function App() {
         <Routes>
           <Route
             path="/taipower-autolabel"
-            element={<AddProject ProjectData={ProjectData} />}
+            element={<AddProject ProjectData={ProjectData} onSubmitSuccess={fetchProjectData} />}
           />
           <Route path="/project" element={<TaskList />} />
           <Route
