@@ -95,6 +95,7 @@ function Modal({ openModal, closeModal, onSubmitSuccess }) {
 
   const HandleSubmit = async () => {
     try {
+      // First request - Create project
       const response = await axios.post(
         `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`,
         {
@@ -109,32 +110,42 @@ function Modal({ openModal, closeModal, onSubmitSuccess }) {
       );
 
       const projectId = response.data.id;
-      console.log(projectId)
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      console.log(formData)
+      console.log("Project ID:", projectId);
 
-      await axios.post(
-        `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${projectId}/import`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            // "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`
-          },
+      // Second request - Upload files
+      if (files && files.length > 0) {
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append("files", file);
+        });
+
+        try {
+          const response2 = await axios.post(
+            `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${projectId}/import`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          console.log("File upload response:", response2.data);
+        } catch (error) {
+          console.error("Error uploading files:", error);
+          throw error;
         }
-      );
+      }
+
+      // Call onSubmitSuccess to trigger parent component refresh
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
 
       closeModal();
-      if (onSubmitSuccess) {
-        console.log("Calling onSubmitSuccess");
-        onSubmitSuccess(); // Call the passed down onSubmitSuccess prop
-      }
       navigate("/taipower-autolabel");
     } catch (error) {
-      console.error("Error submitting:", error);
+      console.error("Error in HandleSubmit:", error);
+      alert("Error creating project. Please try again.");
     }
   };
 
@@ -148,6 +159,10 @@ function Modal({ openModal, closeModal, onSubmitSuccess }) {
 
   const handleStep = (step) => () => {
     setActiveStep(step);
+  };
+
+  const handleFileChange = (selectedFiles) => {
+    setFiles(selectedFiles);
   };
 
   useEffect(() => {
@@ -264,7 +279,7 @@ function Modal({ openModal, closeModal, onSubmitSuccess }) {
                 />
               );
             case 1:
-              return <Step1 onFileChange={setFiles} />;
+              return <Step1 onFileChange={handleFileChange} />;
             default:
               return <Step2 onKnowledgeDataChange={setKnowledge} />;
           }
@@ -442,7 +457,6 @@ export default function AddProject({ ProjectData, onSubmitSuccess }) {
             const name = data.name;
 
             if (roles.length > 0) {
-
               // Set login user's role
               setRole1(roles[0].name);
               setRole2(name);
@@ -479,10 +493,6 @@ export default function AddProject({ ProjectData, onSubmitSuccess }) {
             gap: "20px",
           }}
         >
-          {/* <h3 style={{ marginRight: "500px" }}>
-            標註專案列表 {role1 && role2 && ` ( ${role1} / ${role2} )`}
-          </h3> */}
-
           <h3 style={{ marginRight: "500px" }}>
             標註專案列表{" "}
             {role1 && role2 && (
@@ -511,7 +521,7 @@ export default function AddProject({ ProjectData, onSubmitSuccess }) {
           <Modal 
             openModal={open} 
             closeModal={handleClose} 
-            onSubmitSuccess={onSubmitSuccess} // Pass through the prop from App.js
+            onSubmitSuccess={onSubmitSuccess}
           />
           <button
             style={{

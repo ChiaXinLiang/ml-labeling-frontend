@@ -442,14 +442,14 @@ export default function TaskList({ ProjectData }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log(`${process.env.REACT_APP_API_ENDPOINT}`);
-        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks/?project=${id}`, {
+        console.log(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${id}`);
+        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${id}`, {
           headers: {
             'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -457,7 +457,14 @@ export default function TaskList({ ProjectData }) {
         if (Array.isArray(data.tasks)) {
           const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
             // Fetch the image
-            const imageResponse = await fetch(`${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`, {
+            // TODO 1
+            const imagePath = item.data.image;
+            // const imagePath = item.data.image.includes('label-studio') 
+            //   ? item.data.image.split('label-studio')[1]
+            //   : item.data.image;
+            
+            const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}${imagePath}`;
+            const imageResponse = await fetch(url, {
               headers: {
                 'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
                 'Content-Type': 'application/json'
