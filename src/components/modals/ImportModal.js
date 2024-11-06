@@ -3,46 +3,41 @@ import BaseModal from "./BaseModal";
 import { useDropzone } from "react-dropzone";
 
 function UploadImg({ onFilesChange, shouldReset }) {
-  const [inputUrl, setInputUrl] = useState("");
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [inputUrl, setInputUrl] = useState("");
 
-  const onDrop = useCallback((acceptedFiles) => {
-    if (acceptedFiles?.length) {
-      const newFiles = acceptedFiles.map(file => ({
-        file,
-        preview: URL.createObjectURL(file)
-      }));
-      setPreviews(prev => [...prev, ...newFiles]);
-      setFiles(prev => {
-        const updatedFiles = [...prev, ...acceptedFiles];
-        onFilesChange(updatedFiles); // Call onFilesChange here instead of in useEffect
-        return updatedFiles;
-      });
-    }
-  }, [onFilesChange]);
-
-  // Reset state when shouldReset changes
   useEffect(() => {
     if (shouldReset) {
-      // Clean up old previews
-      previews.forEach(preview => URL.revokeObjectURL(preview.preview));
       setFiles([]);
       setPreviews([]);
       setInputUrl("");
     }
-  }, [shouldReset, previews]);
+  }, [shouldReset]);
 
-  // Clean up previews on unmount
+  const onDrop = useCallback(acceptedFiles => {
+    setFiles(acceptedFiles);
+    onFilesChange(acceptedFiles);
+    
+    // Create previews
+    const newPreviews = acceptedFiles.map(file => Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    }));
+    setPreviews(newPreviews);
+  }, [onFilesChange]);
+
+  // Cleanup previews on unmount
   useEffect(() => {
     return () => {
-      previews.forEach(preview => URL.revokeObjectURL(preview.preview));
+      previews.forEach(file => URL.revokeObjectURL(file.preview));
     };
   }, [previews]);
 
-  const { getRootProps, getInputProps } = useDropzone({ 
-    accept: { "image/*": [] }, 
-    onDrop 
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp']
+    },
+    onDrop
   });
 
   const handleInputChange = (e) => {

@@ -68,10 +68,12 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
 
   useEffect(() => {
     // Fetch model options
+    console.log(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`);
     fetch(
       `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`
     )
       .then((response) => response.json())
+      .then(console.log)
       .then((result) => {
         const options = result.data
           .filter((model) => model.model_type === selectedModelType)
@@ -231,6 +233,8 @@ export default function AIModel() {
   };
 
   useEffect(() => {
+    console.log("fetch model data");
+    console.log(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`);
     fetch(`${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/getModelTable`)
       .then((res) => res.json())
       .then((data) => {

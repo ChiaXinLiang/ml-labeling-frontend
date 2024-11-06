@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Nav from "./Nav";
 import "./TaskList.css";
@@ -17,7 +17,7 @@ export default function TaskList({ ProjectData }) {
 
   console.log('Current project ID:', projectId);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${projectId}`, {
@@ -31,29 +31,36 @@ export default function TaskList({ ProjectData }) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      
       if (Array.isArray(data.tasks)) {
-        const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
-          const imagePath = item.data.image;
-          const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}${imagePath}`;
-          const imageResponse = await fetch(url, {
-            headers: {
-              'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
-              'Content-Type': 'application/json'
-            }
-          });
+        // Process all tasks in parallel
+        const processedData = await Promise.all(data.tasks.map(async (item) => {
+          // Fetch image and processor data in parallel
+          console.log("item.data.image", `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`);
+          // Remove /label-studio from image path if it exists
+          const imgUrl = item.data.image.startsWith('/label-studio') 
+            ? `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image.substring('/label-studio'.length)}`
+            : `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`;
+          console.log("imgUrl", imgUrl);
+          const [imageResponse, processorResponse] = await Promise.all([
+            fetch(imgUrl, {
+              headers: {
+                'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+              }
+            }),
+            fetch(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`, {
+              headers: {
+                'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
+                'Content-Type': 'application/json'
+              }
+            })
+          ]);
 
           const imageBlob = await imageResponse.blob();
           const imageUrl = URL.createObjectURL(imageBlob);
-
-          const processorResponse = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/accounts/task/processor/${item.id}`, {
-            method: "GET",
-            headers: {
-              'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
           const processorData = await processorResponse.json();
+
           return {
             id: item.id,
             projectId: projectId,
@@ -70,7 +77,7 @@ export default function TaskList({ ProjectData }) {
           };
         }));
 
-        setDatas(dataWithSrc);
+        setDatas(processedData);
       } else {
         setDatas([]);
       }
@@ -80,7 +87,7 @@ export default function TaskList({ ProjectData }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     setProjectData(ProjectData.results);
@@ -88,7 +95,18 @@ export default function TaskList({ ProjectData }) {
 
   useEffect(() => {
     fetchData();
-  }, [projectId]);
+  }, [projectId, fetchData]);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup URLs when component unmounts
+      datas.forEach(data => {
+        if (data.file?.src) {
+          URL.revokeObjectURL(data.file.src);
+        }
+      });
+    };
+  }, [datas]);
 
   const handleRowClick = (params) => {
     // Get profile in local storage

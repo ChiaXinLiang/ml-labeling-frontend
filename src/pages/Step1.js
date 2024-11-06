@@ -11,6 +11,8 @@ export default function Step1({ onFileChange, Title, Description, Knowledge, clo
 
   React.useEffect(() => {
     onFileChange(files);
+    console.log("in step1");
+    console.log(files);
   }, [files]);
 
   function Photo() {
@@ -118,10 +120,11 @@ export default function Step1({ onFileChange, Title, Description, Knowledge, clo
             console.log("Second API Response:", response.data);
 
             const formData = new FormData();
+            console.log("files", files);
             files.forEach((file) => {
               formData.append("files", file);
             });
-
+            console.log("formData", formData);
             const response2 = await axios.post(
               `${process.env.REACT_APP_LAYER2_ENDPOINT}/projects/${id}/import`,
               formData,

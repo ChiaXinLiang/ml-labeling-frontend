@@ -39,6 +39,7 @@ function ProjectModal({ openModal, closeModal, onSubmitSuccess }) {
       const projectId = response.data.id;
 
       // Second request - Upload files
+      console.log(files)
       if (files && files.length > 0) {
         const formData = new FormData();
         files.forEach((file) => {
