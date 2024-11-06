@@ -61,7 +61,10 @@ export default function ModelCard({
           訓練
         </ActionButton>
         <ActionButton
-          onClick={onDeploy}
+          onClick={(e) => {
+            e.preventDefault(); // Prevent default button behavior
+            onDeploy();
+          }}
           style={{
             width: "60px",
             height: "25px",

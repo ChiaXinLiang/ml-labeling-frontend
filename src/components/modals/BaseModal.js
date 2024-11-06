@@ -33,7 +33,7 @@ export default function BaseModal({
       <div style={{ display: "flex" }}>
         <h2 style={{ display: "flex", marginLeft: "5%", flex: "1" }}>{title}</h2>
         {showFooter && (
-          <div style={{ display: "flex", flex: "1", margin: "20px", gap: "10px", marginLeft: "50%" }}>
+          <div style={{ display: "flex", flex: "1", margin: "30px", gap: "5px", marginLeft: "30%" }}>
             <button
               onClick={closeModal}
               style={{

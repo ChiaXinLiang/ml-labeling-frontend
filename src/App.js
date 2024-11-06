@@ -14,7 +14,9 @@ function App() {
   const fetchProjectData = async () => {
     try {
       console.log("Fetching project data");
+      console.log(process.env.REACT_APP_LAYER2_ENDPOINT);
       const res = await fetch(`${process.env.REACT_APP_LAYER2_ENDPOINT}/projects`);
+      console.log(res);
       const data = await res.json();
       setProjectData(data);
     } catch (error) {

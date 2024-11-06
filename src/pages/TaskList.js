@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Nav from "./Nav";
 import "./TaskList.css";
@@ -17,7 +17,7 @@ export default function TaskList({ ProjectData }) {
 
   console.log('Current project ID:', projectId);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/tasks?project=${projectId}`, {
@@ -33,9 +33,11 @@ export default function TaskList({ ProjectData }) {
       const data = await response.json();
       if (Array.isArray(data.tasks)) {
         const dataWithSrc = await Promise.all(data.tasks.map(async (item) => {
-          const imagePath = item.data.image;
-          const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}${imagePath}`;
-          const imageResponse = await fetch(url, {
+          const imgUrl = item.data.image.startsWith('/label-studio') 
+            ? `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image.substring('/label-studio'.length)}`
+            : `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`;
+          console.log("imgUrl", imgUrl);
+          const imageResponse = await fetch(imgUrl, {
             headers: {
               'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`,
               'Content-Type': 'application/json'
@@ -80,14 +82,18 @@ export default function TaskList({ ProjectData }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
-    setProjectData(ProjectData.results);
+    if (ProjectData?.results) {
+      setProjectData(ProjectData.results);
+    }
   }, [ProjectData]);
 
   useEffect(() => {
-    fetchData();
+    if (projectId) {
+      fetchData();
+    }
   }, [projectId]);
 
   const handleRowClick = (params) => {

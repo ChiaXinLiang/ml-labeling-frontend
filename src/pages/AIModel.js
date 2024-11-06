@@ -108,41 +108,47 @@ function HelloModal({ openHelloModal, closeHelloModal, onConfirm, selectedModelT
       onSubmit={() => onConfirm(weightName)}
       className="helloModal"
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+        <div className="dialog-box">
           <label>基礎訓練模型</label>
-          <select style={{ marginLeft: "10px" }}>
+          <Form.Select
+            aria-label="Default select example"
+            className="dialog-form"
+          >
             {modelOptions.map((option, index) => (
               <option key={index} value={option.weightName}>
                 {option.weightName}
               </option>
             ))}
-          </select>
+          </Form.Select>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="dialog-box">
           <label>選擇訓練集</label>
-          <select style={{ marginLeft: "10px" }}>
+          <Form.Select
+            aria-label="Default select example"
+            className="dialog-form"
+          >
             {datasetOptions.map((option, index) => (
               <option key={index} value={option}>
                 {option}
               </option>
             ))}
-          </select>
+          </Form.Select>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="dialog-box">
           <label>想儲存的模型名稱</label>
           <input
             type="text"
             value={weightName}
             onChange={(e) => setWeightName(e.target.value)}
             style={{
-              marginLeft: "10px",
+              width: "200px",
+              height: "30px",
               borderRadius: "5px",
               backgroundColor: "rgba(217, 217, 217, 1)",
               border: "none",
-              padding: "5px",
             }}
           />
         </div>
@@ -163,6 +169,9 @@ export default function AIModel() {
   const [selectedModelType, setSelectedModelType] = useState(null);
   const [selectedWeight, setSelectedWeight] = useState(null);
   const startTrainButtonRef = React.useRef(null);
+  const [currentVersion, setCurrentVersion] = useState(null);
+  const [currentPrecision, setCurrentPrecision] = useState(null);
+  const [currentRecall, setCurrentRecall] = useState(null);
 
   const handleTrainClick = (item) => {
     setOpenDrawerId(item.model_id);
@@ -213,7 +222,7 @@ export default function AIModel() {
             .then((result) => console.log(result))
             .catch((error) => console.error(error));
 
-          setOpenDrawerId(selectedItem);
+          // setOpenDrawerId(selectedItem);
           setTrainOpen(true);
         } else {
           alert("訓練中，請稍後再試");
@@ -246,6 +255,28 @@ export default function AIModel() {
       startTrainButtonRef.current.innerText = "訓練中，請稍後再試";
     }
   }, [isTraining]);
+
+  const handleStartDeployClick = (modelId, weightId) => {
+    // Add your deployment logic here
+    console.log('Deploying model:', modelId, 'with weight:', weightId);
+    // Example:
+    const url = `${process.env.REACT_APP_ENDPOINT_MODEL_MANAGER}/modelManager/depolyModel?model_id=${modelId}&weight_id=${weightId}`;
+    fetch(url)
+      .then(response => response.json()) 
+      .then(data => {
+        console.log('Deploy success:', data);
+        setTrainOpen(false);
+      })
+      .catch(error => console.error('Deploy error:', error));
+  };
+
+  const handleButtonClick = (item, weight) => {
+    setSelectedWeight(weight);
+    setCurrentVersion(weight.weight_name);
+    setCurrentPrecision(Number(weight.Precision).toFixed(2));
+    setCurrentRecall(Number(weight.Recall).toFixed(2));
+    setActiveButton(weight.weight_id);
+  };
 
   return (
     <div
@@ -312,12 +343,123 @@ export default function AIModel() {
         }}
         PaperProps={{
           sx: {
-            backgroundColor: "white",
+            backgroundColor: "white", 
             width: "500px",
           },
         }}
       >
-        {/* Drawer content */}
+        {Array.isArray(modelData.data) &&
+          modelData.data
+            .filter((item) => item.model_id === openDrawerId)
+            .map((item) => (
+              <>
+                <div
+                  key={item.model_id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center", 
+                    width: "500px",
+                    marginTop: "40px",
+                  }}
+                  onClick={() => setTrainOpen(false)}
+                >
+                  {item.weights
+                    .filter(
+                      (weight) => weight.weight_state === true
+                    )
+                    .map((weight) => (
+                      <React.Fragment key={weight.weight_name}>
+                        <div className="offcanvas-text">
+                          <span>目前使用版本</span>
+                          <span id="currentVersion">{currentVersion || weight.weight_name}</span>
+                        </div>
+                        <div className="offcanvas-text">
+                          <span>精確率</span>
+                          <span id="currentPrecision">{currentPrecision || Number(weight.Precision).toFixed(2)}</span>
+                        </div>
+                        <div className="offcanvas-text">
+                          <span>召回率</span>
+                          <span id="currentRecall">{currentRecall || Number(weight.Recall).toFixed(2)}</span>
+                        </div>
+                      </React.Fragment>
+                    ))}
+                </div>
+                <h4
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "500px",
+                    marginLeft: "40px",
+                  }}
+                >
+                  功能:
+                </h4>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "500px",
+                    marginLeft: "40px",
+                  }}
+                >
+                  <button
+                    id="startTrain"
+                    ref={startTrainButtonRef}
+                    className="aibutton"
+                    onClick={() => handleStartDeployClick(item.model_id, selectedWeight.weight_id)}
+                    style={{
+                      marginRight: "10px",
+                      width: "100px",
+                    }}
+                  >
+                    佈署
+                  </button>
+                </div>
+
+                <p className="offcanvas-p">安全帽版本模型列表</p>
+                <div className="offcanvas-box">
+                  {item.weights.map((weight, index) => (
+                    <React.Fragment key={weight.weight_name}>
+                      <div
+                        style={{
+                          width: "100%",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "50px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            flex: "5",
+                            marginLeft: "20px",
+                          }}
+                        >
+                          {weight.weight_name}
+                        </span>
+                        <button
+                          className="offcanvas-button"
+                          style={{ flex: "1" }}
+                          onClick={() =>
+                            handleButtonClick(item, weight)
+                          }
+                          hidden={activeButton === weight.weight_id}
+                        >
+                          切換
+                        </button>
+                      </div>
+                      <Divider
+                        sx={{
+                          border: "0.8px solid rgba(189, 188, 183, 1)",
+                          width: "100%",
+                          height: "1px",
+                        }}
+                      />
+                    </React.Fragment>
+                  ))}
+                </div>
+              </>
+            ))}
       </Drawer>
     </div>
   );
