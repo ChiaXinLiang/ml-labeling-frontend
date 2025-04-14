@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Nav from "./Nav";
 import "./TaskList.css";
 import ButtonGroup from "../components/buttons/ButtonGroup";
-import DataTable from "../components/tables/DataTable";
+import TaskTable from "../components/tables/TaskTable";
 import ImportModal from "../components/modals/ImportModal";
 import { taskListColumns } from "../constants/tableColumns";
 
@@ -31,14 +31,14 @@ export default function TaskList({ ProjectData }) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      
+
       if (Array.isArray(data.tasks)) {
         // Process all tasks in parallel
         const processedData = await Promise.all(data.tasks.map(async (item) => {
           // Fetch image and processor data in parallel
           console.log("item.data.image", `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`);
           // Remove /label-studio from image path if it exists
-          const imgUrl = item.data.image.startsWith('/label-studio') 
+          const imgUrl = item.data.image.startsWith('/label-studio')
             ? `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image.substring('/label-studio'.length)}`
             : `${process.env.REACT_APP_LABEL_STUDIO_HOST}${item.data.image}`;
           console.log("imgUrl", imgUrl);
@@ -108,37 +108,6 @@ export default function TaskList({ ProjectData }) {
     };
   }, [datas]);
 
-  const handleRowClick = (params) => {
-    // Get profile in local storage
-    console.log(params);
-    const profile = JSON.parse(localStorage.getItem("profile"));
-    if (profile) {
-      // Set processor to API server
-      const url = `${process.env.REACT_APP_LAYER2_ENDPOINT}/accounts/task/processor`;
-
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          task_id: params.row.id.toString(),
-          processor: {"annotator":profile.name, "verifier":""}
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(JSON.stringify(data));
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-    }
-
-    const url = `${process.env.REACT_APP_LABEL_STUDIO_HOST}/projects/${projectId}/data?task=${params.id}`;
-    window.location.href = url;
-  };
-
   const handleSelectionChange = (newSelection) => {
     console.log('Selection changed:', newSelection);
     setSelectedIds(newSelection);
@@ -158,7 +127,7 @@ export default function TaskList({ ProjectData }) {
     }
 
     setIsLoading(true);
-    
+
     try {
       const deleteUrl = `${process.env.REACT_APP_LAYER2_ENDPOINT}/tasks/delete/?ids=${JSON.stringify(selectedIds)}`;
       console.log('Deleting tasks at URL:', deleteUrl);
@@ -172,7 +141,7 @@ export default function TaskList({ ProjectData }) {
       });
 
       console.log('Delete response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Delete error response:', errorText);
@@ -184,9 +153,9 @@ export default function TaskList({ ProjectData }) {
       // Update UI immediately
       setDatas(prevDatas => prevDatas.filter(task => !selectedIds.includes(task.id)));
       setSelectedIds([]);
-      
+
       alert("任務刪除成功");
-      
+
       // Refresh data from server
       await fetchData();
 
@@ -252,7 +221,7 @@ export default function TaskList({ ProjectData }) {
           'Authorization': `Token ${process.env.REACT_APP_API_TOKEN}`
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Export failed');
       }
@@ -296,14 +265,12 @@ export default function TaskList({ ProjectData }) {
           fetchData();
         }}
       />
-      <DataTable
-        rows={datas}
-        columns={taskListColumns}
-        onRowClick={handleRowClick}
+      <TaskTable
+        datas={datas}
         selectedIds={selectedIds}
-        onSelectionChange={handleSelectionChange}
-        loading={isLoading}
-        checkboxSelection
+        setSelectedIds={setSelectedIds}
+        projectId={projectId}
+        isLoading={isLoading}
       />
     </div>
   );
